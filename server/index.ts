@@ -87,7 +87,7 @@ if (process.env.APP_ENV === "development") {
   });
 }
 
-beginWritingSnapshot("./snapshot.bin", 3000);
+beginWritingSnapshot("./snapshot.bin", 5000 * 60);
 // testing_createRandomSnapshotFile();
 
 export default {
