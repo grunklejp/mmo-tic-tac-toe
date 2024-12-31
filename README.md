@@ -20,3 +20,4 @@ Current goal:
   - [x] fetch delta
   - [ ] snapshot + syncing loading state
   - [ ] show "disconnected" message and button to reconnect (refetch latest snapshot and resync)
+  - [x] set team cookie

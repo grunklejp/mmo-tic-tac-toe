@@ -8,7 +8,7 @@ ws.onopen = (event) => {
   // ws.send("hello");
   setInterval(() => {
     makeRandomMove(ws);
-  }, 100);
+  }, 10);
 };
 
 ws.onmessage = (event) => {
@@ -18,7 +18,7 @@ ws.onmessage = (event) => {
 function makeRandomMove(ws: WebSocket) {
   const payload = serializeMove({
     // board: Math.floor(Math.random() * BOARD_COUNT),
-    board: Math.floor(Math.random() * 1000),
+    board: Math.floor(Math.random() * 40000),
     cell: Math.floor(Math.random() * 9),
     sequence: Math.floor(Math.random() * 9),
   });

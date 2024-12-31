@@ -3,6 +3,7 @@ import React from "react";
 import type { GridChildComponentProps } from "react-window";
 import { useBoardStore, makeTurnAndRender } from "~/hooks/use-board-store";
 import { getNextTurn } from "~/utils";
+import { useTeam } from "./team-provider";
 
 export const boardsSquared = Math.sqrt(BOARD_COUNT);
 
@@ -14,9 +15,11 @@ export function Board({
   columnIndex,
   rowIndex,
 }: BoardProps) {
+  const team = useTeam();
   const boardIdx = getBoardIndexFromGrid(columnIndex, rowIndex, boardsSquared);
   const { board } = useBoardStore(boardIdx);
   const turn = getNextTurn(board, boardIdx);
+  const isPlayerTurn = turn === team;
 
   if (isScrolling) {
     return (
@@ -35,7 +38,7 @@ export function Board({
             index={i}
             onClick={() => {
               console.log(boardIdx, i, turn);
-              if (b === null) {
+              if (b === null && isPlayerTurn) {
                 makeTurnAndRender({
                   board: boardIdx,
                   cell: i,
