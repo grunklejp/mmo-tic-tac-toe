@@ -29,6 +29,7 @@ function beginWritingSnapshot(filename: string, rateMS: number) {
       Bun.hash(buff)
     );
     await writeSnapshot(buff, sequences.current, filename);
+    sequences.flush();
   }, rateMS);
 }
 
@@ -43,6 +44,7 @@ function loadSnapshot(buff: ArrayBuffer) {
 
 /**
  * Where most of the logic to the game is, this will likely be done in an embedded function in redis
+ * TODO: fix bug - for some reason X's are overwriting O's over the long run.
  * @param xBitset
  * @param oBitset
  */

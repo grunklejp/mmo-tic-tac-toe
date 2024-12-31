@@ -13,3 +13,7 @@ Current goal:
     - is server or client setting wrong size? server
   - [x] store moves with sequence number
   - [x] fetch delta
+  - [ ] 🐞 after a long time x's start to overwrite Os, no clue why.
+    - it doesn't look like a race condition, but could be?
+    - it appears to only start when refreshing, might have to do with loading the snapshot?
+    - begin by inspecting snapshot binary value, could be bitset implementation bug on the client?

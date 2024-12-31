@@ -56,7 +56,11 @@ export async function writeSnapshot(
   sequenceNumber: number,
   filename: string
 ) {
-  const view = new DataView(bitset.buffer);
+  const view = new DataView(
+    bitset.buffer,
+    bitset.byteOffset,
+    bitset.byteLength
+  );
   view.setUint32(0, sequenceNumber, true);
   await Bun.write(filename, bitset);
 }
