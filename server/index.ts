@@ -17,6 +17,8 @@ import {
   deserializeMove,
   parseMessage,
 } from "~/protocol";
+import { getRandomTeam, getTeam } from "./team";
+import { setSignedCookie } from "hono/cookie";
 
 const app = new Hono();
 
@@ -24,11 +26,27 @@ const { upgradeWebSocket, websocket } = createBunWebSocket<ServerWebSocket>();
 
 app.get("/api/snapshot.bin", serveStatic({ path: "/snapshot.bin" }));
 
+app.get("/api/team", async (c) => {
+  const existingTeam = await getTeam(c);
+  if (existingTeam) {
+    return c.json({
+      team: existingTeam,
+    });
+  }
+  const newTeam = getRandomTeam();
+
+  await setSignedCookie(c, "team", newTeam, process.env.COOKIE_SIGNING_SECRET!);
+
+  return c.json({
+    team: newTeam,
+  });
+});
+
 app.get(
   "/ws",
   upgradeWebSocket((c) => {
     return {
-      onMessage: (event, ws) => {
+      onMessage: async (event, ws) => {
         const socket = ws.raw as ServerWebSocket;
         if (event.data instanceof ArrayBuffer) {
           const buff = new Uint8Array(event.data);
@@ -37,7 +55,13 @@ app.get(
           switch (kind) {
             case CLIENT_MSG.MAKE_MOVE: {
               const move = deserializeMove(payload);
-              const result = attemptMove(move, xBitset, oBitset);
+              const userTeam = await getTeam(c);
+
+              if (!userTeam) {
+                throw new Error("Error: must have team to make move.");
+              }
+
+              const result = attemptMove(move, xBitset, oBitset, userTeam);
               if (result.success) {
                 sequences.append(payload);
                 const patchUpdate = buildPatchMessage(payload);
@@ -87,7 +111,8 @@ if (process.env.APP_ENV === "development") {
   });
 }
 
-beginWritingSnapshot("./snapshot.bin", 5000 * 60);
+// beginWritingSnapshot("./snapshot.bin", 5000 * 60);
+beginWritingSnapshot("./snapshot.bin", 10000);
 // testing_createRandomSnapshotFile();
 
 export default {

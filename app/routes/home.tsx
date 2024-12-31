@@ -15,6 +15,7 @@ import {
   makeTurnAndRender,
   toClientMove,
 } from "~/hooks/use-board-store";
+import { TeamProvider } from "~/components/team-provider";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -97,21 +98,23 @@ export default function Home() {
   }, [fetchedSnapshot]);
 
   return (
-    <Grid
-      key={key}
-      overscanColumnCount={1}
-      overscanRowCount={1}
-      columnCount={boardsSquared}
-      rowCount={boardsSquared}
-      columnWidth={100}
-      rowHeight={100}
-      height={dims.h}
-      width={dims.w}
-    >
-      {(props) => {
-        return <Board {...props} />;
-      }}
-    </Grid>
+    <TeamProvider>
+      <Grid
+        key={key}
+        overscanColumnCount={1}
+        overscanRowCount={1}
+        columnCount={boardsSquared}
+        rowCount={boardsSquared}
+        columnWidth={100}
+        rowHeight={100}
+        height={dims.h}
+        width={dims.w}
+      >
+        {(props) => {
+          return <Board {...props} />;
+        }}
+      </Grid>
+    </TeamProvider>
   );
 }
 

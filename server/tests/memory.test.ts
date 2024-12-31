@@ -15,28 +15,30 @@ test("attemptMove", () => {
     sequence: 0,
   };
 
-  const result = attemptMove(move, xBitset, oBitset);
+  const result = attemptMove(move, xBitset, oBitset, "o");
 
   expect(result.success).toBe(true);
 
   expect(oBitset[0]).toBe(128);
   expect(xBitset[0]).toBe(0);
 
-  const retried = attemptMove(move, xBitset, oBitset);
+  const retried = attemptMove(move, xBitset, oBitset, "o");
 
   expect(retried.success).toBe(false);
 
   const retriedSameCell = attemptMove(
     { ...move, sequence: move.sequence + 1 },
     xBitset,
-    oBitset
+    oBitset,
+    "x"
   );
   expect(retriedSameCell.success).toBe(false);
 
   const retriedSameSequence = attemptMove(
     { ...move, cell: move.cell + 1 },
     xBitset,
-    oBitset
+    oBitset,
+    "o"
   );
   expect(retriedSameSequence.success).toBe(false);
 });
@@ -49,7 +51,8 @@ test("X's don't overwrite O's", () => {
   const validMove = attemptMove(
     { board: 0, cell: 0, sequence: 0 },
     xBitset,
-    oBitset
+    oBitset,
+    "o"
   );
   expect(validMove.success).toBe(true);
   expect(oBitset[0]).toBe(0b1000_0000);
@@ -58,7 +61,8 @@ test("X's don't overwrite O's", () => {
   const invalidMove = attemptMove(
     { board: 0, cell: 0, sequence: 1 },
     xBitset,
-    oBitset
+    oBitset,
+    "x"
   );
   expect(invalidMove.success).toBe(false);
   expect(oBitset[0]).toBe(0b1000_0000);

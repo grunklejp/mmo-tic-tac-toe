@@ -51,7 +51,8 @@ function loadSnapshot(buff: ArrayBuffer) {
 export function attemptMove(
   move: Move,
   xBitset: Uint8Array,
-  oBitset: Uint8Array
+  oBitset: Uint8Array,
+  userTeam: "x" | "o"
 ): { success: true } | { success: false; error: string } {
   const { board, cell, sequence } = move;
   // find the boards,
@@ -91,8 +92,14 @@ export function attemptMove(
 
   const next = getNextTurnFromMoveCount(movesMade, board);
 
-  // update board
+  if (next !== userTeam) {
+    return {
+      success: false,
+      error: "Not user's team's turn",
+    };
+  }
 
+  // update board
   if (next === "o") {
     setBit(oBitset, boardStartIndex + cell);
   } else {
