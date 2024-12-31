@@ -104,13 +104,13 @@ test("integration with batch patching", () => {
 
   // send batch update to client
   const flattened = log.flatten();
-  const batchMessage = buildBatchPatchMessage(flattened, log.current);
+  const batchMessage = buildBatchPatchMessage(flattened, log.earliest);
 
   // // decode moves on the client
   const payload = parseMessage(batchMessage).payload;
   const batchMoves = deserializeBatchPatch(payload);
 
-  expect(batchMoves.lastSeqNum).toBe(log.current);
+  expect(batchMoves.sequenceStart).toBe(log.earliest);
   batchMoves.moves.forEach((mv, i) => {
     expect(mv).toStrictEqual(clientMoves[i]);
   });

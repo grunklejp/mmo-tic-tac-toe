@@ -121,11 +121,11 @@ export function buildPatchMessage(payload: Uint8Array) {
  * naively send entire sequence log in memory as one payload
  * (can client stream this in using RLE?)
  * @param payload
- * @param latestSequenceNum
+ * @param startSeqNum
  */
 export function buildBatchPatchMessage(
   payload: Uint8Array,
-  latestSequenceNum: number
+  startSeqNum: number
 ) {
   if (payload.byteLength % MOVE_PAYLOAD_LENGTH !== 0) {
     throw new Error(
@@ -141,7 +141,7 @@ export function buildBatchPatchMessage(
     message.byteLength
   );
   view.setUint8(0, SERVER_MSG.BATCH_PATCH);
-  view.setUint32(1, latestSequenceNum, true);
+  view.setUint32(1, startSeqNum, true);
   message.set(payload, 5);
 
   return message;
@@ -149,7 +149,7 @@ export function buildBatchPatchMessage(
 
 export function deserializeBatchPatch(payload: Uint8Array): {
   moves: Array<Move>;
-  lastSeqNum: number;
+  sequenceStart: number;
 } {
   const view = new DataView(
     payload.buffer,
@@ -164,6 +164,6 @@ export function deserializeBatchPatch(payload: Uint8Array): {
 
   return {
     moves,
-    lastSeqNum: sequenceNumber,
+    sequenceStart: sequenceNumber,
   };
 }

@@ -2,9 +2,19 @@ import { Board, boardsSquared } from "~/components/board";
 import type { Route } from "./+types/home";
 import { FixedSizeGrid as Grid } from "react-window";
 import { useEffect, useState } from "react";
-import { parseSnapshot } from "~/state";
-import { deserializeMove, parseMessage, SERVER_MSG } from "~/protocol";
-import { makeTurnAndRender, toClientMove } from "~/hooks/use-board-store";
+import { parseSnapshot, snapshotSequenceNum } from "~/state";
+import {
+  deserializeBatchPatch,
+  deserializeMove,
+  parseMessage,
+  SERVER_MSG,
+  type Move,
+} from "~/protocol";
+import {
+  makeTurn,
+  makeTurnAndRender,
+  toClientMove,
+} from "~/hooks/use-board-store";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -17,6 +27,9 @@ export default function Home() {
   const [dims, setDims] = useState({ h: 1000, w: 1000 });
   const [key, setKey] = useState(Math.random());
   const rerender = () => setKey(Math.random());
+  const [fetchedSnapshot, setFetchedSnapshot] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const [needRefresh, setNeedRefresh] = useState(false);
 
   // TODO: dynamically resize on window resize
   useEffect(() => {
@@ -39,6 +52,7 @@ export default function Home() {
         const data = await response.arrayBuffer();
         parseSnapshot(data);
         rerender();
+        setFetchedSnapshot(true);
       } catch (e) {
         console.error(e);
       }
@@ -48,11 +62,10 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    if (!fetchedSnapshot) return;
     const ws = new WebSocket("/ws");
     ws.binaryType = "arraybuffer";
-    ws.onopen = (event) => {
-      // ws.send(bits);
-    };
+    ws.onopen = (event) => {};
     ws.onmessage = (event) => {
       const msg = parseMessage(new Uint8Array(event.data));
 
@@ -61,11 +74,27 @@ export default function Home() {
           const orderedMove = deserializeMove(msg.payload);
           const clientMove = toClientMove(orderedMove);
           makeTurnAndRender(clientMove);
+          break;
+        }
+        case SERVER_MSG.BATCH_PATCH: {
+          const { sequenceStart, moves } = deserializeBatchPatch(msg.payload);
+
+          // check if our snapshot is out of date
+          if (sequenceStart > snapshotSequenceNum) {
+            console.log(
+              `snapshot sequence ${snapshotSequenceNum} is to far behind start of latest batch sync payload ${sequenceStart}`
+            );
+            setNeedRefresh(true);
+          } else {
+            startSync(moves, () => {
+              setSyncing(false);
+            });
+          }
         }
       }
     };
     return () => ws.close();
-  }, []);
+  }, [fetchedSnapshot]);
 
   return (
     <Grid
@@ -84,4 +113,14 @@ export default function Home() {
       }}
     </Grid>
   );
+}
+
+function startSync(moves: Move[], onFinish: () => void) {
+  console.log("syncing", moves.length, "moves since snapshot");
+
+  for (let move of moves) {
+    makeTurn(toClientMove(move));
+  }
+
+  onFinish();
 }

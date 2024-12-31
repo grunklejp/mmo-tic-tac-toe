@@ -11,6 +11,7 @@ import {
 } from "./memory";
 import { testing_createRandomSnapshotFile } from "~/utils";
 import {
+  buildBatchPatchMessage,
   buildPatchMessage,
   CLIENT_MSG,
   deserializeMove,
@@ -40,7 +41,7 @@ app.get(
               if (result.success) {
                 sequences.append(payload);
                 const patchUpdate = buildPatchMessage(payload);
-                socket.publishBinary("patch-updates", patchUpdate);
+                socket.publishBinary("patch-updates", patchUpdate, true);
                 ws.send(patchUpdate);
               }
             }
@@ -51,6 +52,14 @@ app.get(
       },
       onOpen: (event, ws) => {
         const socket = ws.raw as ServerWebSocket;
+
+        // Send the most recent messages since the latest snapshot
+        const movesSinceLastSnapshot = sequences.flatten();
+        const catchUpMSG = buildBatchPatchMessage(
+          movesSinceLastSnapshot,
+          sequences.earliest
+        );
+        socket.sendBinary(catchUpMSG, true);
 
         // set up client subscriber;
         socket.subscribe("patch-updates");
