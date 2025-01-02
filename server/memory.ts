@@ -2,9 +2,8 @@ import { BOARD_COUNT } from "config";
 import type { Move } from "~/protocol";
 import {
   getBit,
-  getLastTurn,
-  getNextTurn,
   getNextTurnFromMoveCount,
+  getOBitset,
   getXBitset,
   setBit,
   writeSnapshot,
@@ -36,7 +35,7 @@ function beginWritingSnapshot(filename: string, rateMS: number) {
 function loadSnapshot(buff: ArrayBuffer) {
   buffer = buff;
   xBitset = getXBitset(buff, bytesPerSide);
-  oBitset = getXBitset(buff, bytesPerSide);
+  oBitset = getOBitset(buff, bytesPerSide);
   const latestSequenceNum = new DataView(buff).getInt32(0, true);
   console.log("loaded sequencenumber:", latestSequenceNum);
   sequences.setCurrent(latestSequenceNum);

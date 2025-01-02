@@ -130,7 +130,7 @@ function startSync(moves: Move[], onFinish: () => void) {
   console.log("syncing", moves.length, "moves since snapshot");
 
   for (let move of moves) {
-    makeTurn(toClientMove(move));
+    makeTurnAndRender(toClientMove(move));
   }
 
   onFinish();

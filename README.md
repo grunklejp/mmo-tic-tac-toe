@@ -12,12 +12,11 @@ Current goal:
     - what should size be? (4bytes sequence num) math.ceil((boardcount _ 9) / 8) _ 2 = 1,195,748 bytes
     - is server or client setting wrong size? server
   - [x] store moves with sequence number
-  - [ ] 🐞 after a long time x's start to overwrite Os, no clue why.
-    - it doesn't look like a race condition, but could be?
-    - it appears to only start when refreshing, might have to do with loading the snapshot?
-    - begin by inspecting snapshot binary value, could be bitset implementation bug on the client?
-    - ... having trouble reproducing it now..
+  - [x] 🐞 after a long time x's start to overwrite Os, no clue why.
+    - SOLVED: when loading the snapshot we were loading the Os in to the X bitset, thus flushing the buffer to disk wrote them back into the X's byte range. It was intermittent because if we didnt have a snapshot we'd never call loadSnapshot.
   - [x] fetch delta
+  - [x] 🐞 fetching delta not working fast enough on page refresh
+    - SOLVED: just needed to trigger a rerender
   - [ ] snapshot + syncing loading state
   - [ ] show "disconnected" message and button to reconnect (refetch latest snapshot and resync)
   - [x] set team cookie
