@@ -119,3 +119,36 @@ export function toClientMove(move: Move): ClientMove {
     value: turn,
   };
 }
+
+export function fromClientMove(
+  move: ClientMove,
+  xBitset: Uint8Array,
+  oBitset: Uint8Array
+): Move {
+  const sequence = countMoves(move.board, xBitset, oBitset);
+
+  return {
+    board: move.board,
+    cell: move.cell,
+    sequence: sequence,
+  };
+}
+
+export function countMoves(
+  boardIdx: number,
+  xBitset: Uint8Array,
+  oBitset: Uint8Array
+) {
+  let count = 0;
+
+  for (let i = 0; i < 9; i++) {
+    const index = boardIdx * 9 + i;
+    const xBit = getBit(xBitset, index);
+    const oBit = getBit(oBitset, index);
+
+    if (xBit || oBit) {
+      count++;
+    }
+  }
+  return count;
+}

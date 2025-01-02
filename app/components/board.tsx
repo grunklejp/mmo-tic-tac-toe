@@ -1,9 +1,10 @@
 import { BOARD_COUNT } from "config";
-import React from "react";
+import React, { useState } from "react";
 import type { GridChildComponentProps } from "react-window";
 import { useBoardStore, makeTurnAndRender } from "~/hooks/use-board-store";
 import { getNextTurn } from "~/utils";
 import { useTeam } from "./team-provider";
+import { useProtocol } from "./sync-state-provider";
 
 export const boardsSquared = Math.sqrt(BOARD_COUNT);
 
@@ -16,6 +17,7 @@ export function Board({
   rowIndex,
 }: BoardProps) {
   const team = useTeam();
+  const protocol = useProtocol();
   const boardIdx = getBoardIndexFromGrid(columnIndex, rowIndex, boardsSquared);
   const { board } = useBoardStore(boardIdx);
   const turn = getNextTurn(board, boardIdx);
@@ -36,14 +38,15 @@ export function Board({
             nextTurn={turn}
             state={b}
             index={i}
-            onClick={() => {
+            onMove={(cb) => {
               console.log(boardIdx, i, turn);
-              if (b === null && isPlayerTurn) {
-                makeTurnAndRender({
+              if (b === null && isPlayerTurn && protocol?.move) {
+                protocol.move({
                   board: boardIdx,
                   cell: i,
                   value: turn,
                 });
+                cb(turn);
               }
             }}
           />
@@ -60,14 +63,16 @@ export function Board({
 type GameCellProps = {
   state: "x" | "o" | null;
   index: number;
-  onClick: React.MouseEventHandler<HTMLButtonElement>;
+  onMove: (cb: (arg: "x" | "o") => void) => void;
   nextTurn: "x" | "o";
 };
 
-function GameCell({ state, onClick, nextTurn }: GameCellProps) {
-  const colorClass = state === "x" ? "text-red-500" : "text-blue-500";
+function GameCell({ state, onMove, nextTurn }: GameCellProps) {
+  const [memodValue, setMemodValue] = useState<"x" | "o" | null>(null);
+  const colorClass =
+    state === "x" || memodValue === "x" ? "text-red-500" : "text-blue-500";
   const bgColor =
-    state !== null
+    state !== null || memodValue !== null
       ? "bg-white border-gray-500"
       : nextTurn === "x"
       ? "bg-red-50 border-red-700"
@@ -75,10 +80,16 @@ function GameCell({ state, onClick, nextTurn }: GameCellProps) {
 
   return (
     <button
-      onClick={onClick}
+      onClick={(e) => {
+        onMove((val) => {
+          // After attempting a move we assume the move went through for 2 seconds
+          setMemodValue(val);
+          setTimeout(() => setMemodValue(null), 2000);
+        });
+      }}
       className={`w-full h-full border uppercase font-semibold ${colorClass} ${bgColor}`}
     >
-      {state}
+      {state ?? memodValue}
     </button>
   );
 }

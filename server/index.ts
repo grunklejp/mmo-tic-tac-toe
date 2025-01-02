@@ -66,7 +66,7 @@ app.get(
                 sequences.append(payload);
                 const patchUpdate = buildPatchMessage(payload);
                 socket.publishBinary("patch-updates", patchUpdate, true);
-                ws.send(patchUpdate);
+                ws.send(patchUpdate); // publish doesn't send to client that triggered it, so we need to send it manually
               }
             }
           }
