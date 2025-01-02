@@ -1,7 +1,7 @@
 import { BOARD_COUNT } from "config";
-import React, { useState } from "react";
+import { useState } from "react";
 import type { GridChildComponentProps } from "react-window";
-import { useBoardStore, makeTurnAndRender } from "~/hooks/use-board-store";
+import { useBoardStore } from "~/hooks/use-board-store";
 import { getNextTurn } from "~/utils";
 import { useTeam } from "./team-provider";
 import { useProtocol } from "./sync-state-provider";

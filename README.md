@@ -21,4 +21,4 @@ Current goal:
   - [ ] snapshot + syncing loading state
   - [ ] show "disconnected" message and button to reconnect (refetch latest snapshot and resync)
   - [x] set team cookie
-  - [ ] make move from the client
+  - [x] make move from the client
