@@ -27,21 +27,21 @@ export default function Home() {
     <TeamProvider>
       <SyncStateProvider>
         {(renderKey) => (
-          <Grid
-            key={renderKey}
-            overscanColumnCount={1}
-            overscanRowCount={1}
-            columnCount={boardsSquared}
-            rowCount={boardsSquared}
-            columnWidth={100}
-            rowHeight={100}
-            height={dims.h}
-            width={dims.w}
-          >
-            {(props) => {
-              return <Board {...props} />;
-            }}
-          </Grid>
+            <Grid
+              key={renderKey}
+              overscanColumnCount={1}
+              overscanRowCount={1}
+              columnCount={boardsSquared}
+              rowCount={boardsSquared}
+              columnWidth={100}
+              rowHeight={100}
+              height={dims.h}
+              width={dims.w}
+            >
+              {(props) => {
+                return <Board {...props} />;
+              }}
+            </Grid>
         )}
       </SyncStateProvider>
     </TeamProvider>

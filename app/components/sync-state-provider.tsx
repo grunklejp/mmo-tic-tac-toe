@@ -24,6 +24,7 @@ import {
   toClientMove,
   type ClientMove,
 } from "~/hooks/use-board-store";
+import { ReconnectWidget } from "./reconnect-widget";
 
 type Props = {
   children: (renderKey: React.Key) => ReactNode;
@@ -48,7 +49,7 @@ export function SyncStateProvider({ children }: Props) {
       throw new Error("socket not initialized");
     }
 
-    if (socketRef.current.OPEN !== 1) {
+    if (socketRef.current.readyState !== WebSocket.OPEN) {
       throw new Error("Socket not open");
     }
 
@@ -80,10 +81,22 @@ export function SyncStateProvider({ children }: Props) {
   useEffect(() => {
     if (!fetchedSnapshot) return;
     const ws = new WebSocket("/ws");
+    // let heartbeatInterval: Timer;
     socketRef.current = ws;
     ws.binaryType = "arraybuffer";
     ws.onopen = (event) => {
       console.log("Socket opened");
+
+      // heartbeatInterval = setInterval(() => {
+      //   if (ws.readyState === WebSocket.OPEN) {
+      //     console.log("pinging server");
+      //     ws.send("ping");
+      //   }
+      // }, 5000);
+    };
+    ws.onclose = (event) => {
+      console.log("Socket closed");
+      setNeedRefresh(true);
     };
     ws.onmessage = (event) => {
       const msg = parseMessage(new Uint8Array(event.data));
@@ -112,12 +125,18 @@ export function SyncStateProvider({ children }: Props) {
         }
       }
     };
-    return () => ws.close();
+    return () => {
+      // clearInterval(heartbeatInterval);
+      ws.close();
+    };
   }, [fetchedSnapshot]);
 
   return (
     <protocolContext.Provider value={{ move }}>
-      {children(key)}
+      <div className="relative">
+        {needRefresh && <ReconnectWidget />}
+        {children(key)}
+      </div>
     </protocolContext.Provider>
   );
 }
