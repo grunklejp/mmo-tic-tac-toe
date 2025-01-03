@@ -18,6 +18,9 @@ Current goal:
   - [x] 🐞 fetching delta not working fast enough on page refresh
     - SOLVED: just needed to trigger a rerender
   - [ ] snapshot + syncing loading state
-  - [ ] show "disconnected" message and button to reconnect (refetch latest snapshot and resync)
+  - [ ] snapshot fetching error message
+  - [x] show "disconnected" message and button to reconnect (refetch latest snapshot and resync)
   - [x] set team cookie
   - [x] make move from the client
+  - [ ] check win
+    - [x] don't let user click on boards that are won

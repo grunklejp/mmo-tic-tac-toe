@@ -1,5 +1,6 @@
 import { BOARD_COUNT } from "config";
 import { getOBitset, getXBitset } from "./utils";
+import { checkWin } from "./game";
 
 export function bytesNeededForState(totalCells: number) {
   // we ceil here incase we have a fraction and need an extra byte
@@ -27,4 +28,8 @@ export function parseSnapshot(buff: ArrayBuffer) {
 
   xBitset = getXBitset(buff, boardsSizeInBytes);
   oBitset = getOBitset(buff, boardsSizeInBytes);
+}
+
+export function hasWinner(board: number) {
+  return checkWin(board, xBitset, oBitset) !== null;
 }

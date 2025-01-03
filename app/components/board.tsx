@@ -5,6 +5,7 @@ import { useBoardStore } from "~/hooks/use-board-store";
 import { getNextTurn } from "~/utils";
 import { useTeam } from "./team-provider";
 import { useProtocol } from "./sync-state-provider";
+import { hasWinner } from "~/state";
 
 export const boardsSquared = Math.sqrt(BOARD_COUNT);
 
@@ -41,6 +42,13 @@ export function Board({
             onMove={(cb) => {
               console.log(boardIdx, i, turn);
               if (b === null && isPlayerTurn && protocol?.move) {
+                // before moving on, lets make sure this board hasn't already won
+
+                if (hasWinner(boardIdx)) {
+                  console.log("That board is already finished");
+                  return null;
+                }
+
                 protocol.move({
                   board: boardIdx,
                   cell: i,
