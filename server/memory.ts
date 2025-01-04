@@ -1,26 +1,20 @@
-import { BOARD_COUNT } from "config";
+import { LEVELS } from "config";
 import type { Move } from "~/protocol";
 import {
   getBit,
   getNextTurnFromMoveCount,
-  getOBitset,
-  getXBitset,
   setBit,
   writeSnapshot,
 } from "~/utils";
 import { SequenceLog } from "./sequence-log";
+import { GameState } from "~/game-state";
 
 export const sequences = new SequenceLog();
-
-const bytesPerSide = Math.ceil((BOARD_COUNT * 9) / 8);
-
-let buffer = new ArrayBuffer(4 + bytesPerSide * 2);
-export let xBitset = new Uint8Array(buffer, 4, bytesPerSide);
-export let oBitset = new Uint8Array(buffer, bytesPerSide + 4, bytesPerSide);
+export const memoryState = new GameState(LEVELS);
 
 function beginWritingSnapshot(filename: string, rateMS: number) {
   setInterval(async () => {
-    const buff = new Uint8Array(buffer);
+    const buff = new Uint8Array(memoryState.getBuffer());
     console.log(
       "writing snapshot with seqNum",
       sequences.current,
@@ -33,17 +27,12 @@ function beginWritingSnapshot(filename: string, rateMS: number) {
 }
 
 function loadSnapshot(buff: ArrayBuffer) {
-  buffer = buff;
-  xBitset = getXBitset(buff, bytesPerSide);
-  oBitset = getOBitset(buff, bytesPerSide);
-  const latestSequenceNum = new DataView(buff).getInt32(0, true);
-  console.log("loaded sequencenumber:", latestSequenceNum);
-  sequences.setCurrent(latestSequenceNum);
+  memoryState.setBuffer(buff);
+  sequences.setCurrent(memoryState.sequenceNumber);
 }
 
 /**
  * Where most of the logic to the game is, this will likely be done in an embedded function in redis
- * TODO: fix bug - for some reason X's are overwriting O's over the long run.
  * @param xBitset
  * @param oBitset
  */

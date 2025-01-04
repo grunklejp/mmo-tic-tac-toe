@@ -1,6 +1,8 @@
 // Everything having to do with our binary websocket protocol
 
-import { BOARD_COUNT } from "config";
+import { LEVELS } from "config";
+
+const totalBoardCount = Math.pow(9, LEVELS);
 
 const MOVE_PAYLOAD_LENGTH = 4; // bytes
 
@@ -31,7 +33,7 @@ export function deserializeMove(move: Uint8Array): Move {
   const sequence = (move[3] >> 4) & 0xf;
   const cell = move[3] & 0xf;
 
-  if (board >= BOARD_COUNT) {
+  if (board >= totalBoardCount) {
     throw new Error(`Invalid board index, ${board} outside of board range`);
   }
 

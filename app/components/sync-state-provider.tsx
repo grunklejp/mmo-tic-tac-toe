@@ -7,7 +7,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { oBitset, parseSnapshot, snapshotSequenceNum, xBitset } from "~/state";
+import { parseSnapshot, gameState } from "~/state";
 import {
   buildMoveMessage,
   deserializeBatchPatch,
@@ -112,9 +112,9 @@ export function SyncStateProvider({ children }: Props) {
           const { sequenceStart, moves } = deserializeBatchPatch(msg.payload);
 
           // check if our snapshot is out of date
-          if (sequenceStart > snapshotSequenceNum) {
+          if (sequenceStart > gameState.sequenceNumber) {
             console.log(
-              `snapshot sequence ${snapshotSequenceNum} is to far behind start of latest batch sync payload ${sequenceStart}`
+              `snapshot sequence ${gameState.sequenceNumber} is to far behind start of latest batch sync payload ${sequenceStart}`
             );
             setNeedRefresh(true);
           } else {
@@ -156,7 +156,9 @@ function startSync(moves: Move[], onFinish: () => void) {
 }
 
 function attemptClientMove(move: ClientMove, ws: WebSocket) {
-  const serliazed = serializeMove(fromClientMove(move, xBitset, oBitset));
+  const serliazed = serializeMove(
+    fromClientMove(move, gameState.bitset(6, "x"), gameState.bitset(6, "o"))
+  );
   const message = buildMoveMessage(serliazed);
   ws.send(message);
 }

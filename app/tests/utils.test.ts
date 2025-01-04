@@ -1,5 +1,4 @@
 import { expect, test } from "vitest";
-import { bytesNeededForState } from "~/state";
 import { getBit, getLastTurn, setBit, setBitAs, unsetBit } from "~/utils";
 
 test("getBit works", () => {
@@ -38,10 +37,6 @@ test("setBitAs works", () => {
   setBitAs(bitset, 8, 0);
 
   expect(bitset).toStrictEqual(expectedBitset);
-});
-
-test("bytesNeededForState", () => {
-  expect(bytesNeededForState(4_782_969)).toBe(597_872);
 });
 
 test("getLastTurn", () => {

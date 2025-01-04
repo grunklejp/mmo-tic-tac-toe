@@ -75,16 +75,6 @@ export async function testing_createRandomSnapshotFile() {
   writeSnapshot(bitset, 1, "snapshot.bin");
 }
 
-export function getXBitset(buff: ArrayBuffer, boardBytes: number) {
-  const offset = 4; // cut off the sequence number bytes
-  return new Uint8Array(buff, offset, boardBytes);
-}
-
-export function getOBitset(buff: ArrayBuffer, boardBytes: number) {
-  const offset = 4 + boardBytes; // cut off the sequence number & Xbitset bytes
-  return new Uint8Array(buff, offset, boardBytes);
-}
-
 /**
  * Determines whose turn it is for this current board.
  * If the board index is even that means O's started so we simply count

@@ -5,8 +5,7 @@ import {
   attemptMove,
   beginWritingSnapshot,
   loadSnapshot,
-  oBitset,
-  xBitset,
+  memoryState,
   sequences,
 } from "./memory";
 import { testing_createRandomSnapshotFile } from "~/utils";
@@ -61,13 +60,25 @@ app.get(
                 throw new Error("Error: must have team to make move.");
               }
 
-              const result = attemptMove(move, xBitset, oBitset, userTeam);
+              const xbitset = memoryState.bitset(6, "x");
+              const obitset = memoryState.bitset(6, "o");
+
+              const result = attemptMove(move, xbitset, obitset, userTeam);
               if (result.success) {
                 sequences.append(payload);
                 const patchUpdate = buildPatchMessage(payload);
                 socket.publishBinary("patch-updates", patchUpdate, true);
                 ws.send(patchUpdate); // publish doesn't send to client that triggered it, so we need to send it manually
               }
+
+              console.log(
+                "attempted move",
+                JSON.stringify(move),
+                "| result:",
+                result.success
+                  ? result.success
+                  : `${result.success} ${result.error}`
+              );
             }
           }
         } else {

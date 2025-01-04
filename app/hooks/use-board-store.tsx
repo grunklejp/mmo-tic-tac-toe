@@ -1,11 +1,10 @@
-import { BOARD_COUNT } from "config";
+import { LEVELS } from "config";
 import { useEffect, useState } from "react";
 import type { Move } from "~/protocol";
-import { oBitset, xBitset } from "~/state";
+import { gameState } from "~/state";
 import { getBit, getLastTurn, setBitAs } from "~/utils";
 
-console.log("x length", xBitset.length);
-console.log("o lenth", oBitset.length);
+const totalBoardCount = Math.pow(9, LEVELS);
 
 export type ClientMove = {
   board: number;
@@ -24,7 +23,7 @@ const listeners = new Map<number, Function>();
 
 function batchUpdateNBits(n: number) {
   for (let i = 0; i < n; i++) {
-    const randomBoard = Math.floor((Math.random() * BOARD_COUNT) / 3);
+    const randomBoard = Math.floor((Math.random() * totalBoardCount) / 3);
     const randomCell = Math.floor(Math.random() * 9);
     const randomTurn = Math.floor(Math.random() * 2) == 1 ? "x" : "o";
     makeTurnAndRender({
@@ -57,15 +56,19 @@ export function makeTurn(move: ClientMove) {
   const { board, cell, value } = move;
   const bitIndex = board * 9 + cell;
   if (value === "x") {
-    setBitAs(xBitset, bitIndex, 1);
+    setBitAs(gameState.bitset(6, "x"), bitIndex, 1);
   } else {
-    setBitAs(oBitset, bitIndex, 1);
+    setBitAs(gameState.bitset(6, "o"), bitIndex, 1);
   }
 }
 
 export function useBoardStore(boardIdx: number) {
   const [_, setState] = useState(0);
-  const board = buildBoard(boardIdx, xBitset, oBitset);
+  const board = buildBoard(
+    boardIdx,
+    gameState.bitset(6, "x"),
+    gameState.bitset(6, "o")
+  );
 
   useEffect(() => {
     listeners.set(boardIdx, () => setState((s) => (s === 1 ? 0 : 1)));
