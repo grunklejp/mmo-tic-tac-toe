@@ -1,6 +1,6 @@
 import { it, expect } from "vitest";
 import { SequenceLog } from "../sequence-log";
-import { serializeMove } from "~/protocol";
+import { serializeMove, buildPatchMoveMessage } from "~/protocol";
 
 it("increments when appending", () => {
   const log = new SequenceLog();
@@ -21,21 +21,30 @@ it("flush then flatten returns empty array", () => {
 });
 
 it("flattens correctly", () => {
-  const move1 = serializeMove({
-    board: 0,
-    cell: 0,
-    sequence: 0,
-  });
-  const move2 = serializeMove({
-    board: 0,
-    cell: 1,
-    sequence: 1,
-  });
-  const move3 = serializeMove({
-    board: 0,
-    cell: 2,
-    sequence: 2,
-  });
+  const move1 = buildPatchMoveMessage(
+    serializeMove({
+      board: 0,
+      cell: 0,
+      sequence: 0,
+      level: 1,
+    })
+  );
+  const move2 = buildPatchMoveMessage(
+    serializeMove({
+      board: 0,
+      cell: 1,
+      sequence: 1,
+      level: 1,
+    })
+  );
+  const move3 = buildPatchMoveMessage(
+    serializeMove({
+      board: 0,
+      cell: 2,
+      sequence: 2,
+      level: 1,
+    })
+  );
 
   const log = new SequenceLog();
   log.append(move1);
