@@ -64,12 +64,12 @@ export function makeTurn(move: ClientMove) {
   }
 }
 
-export function useBoardStore(boardIdx: number) {
+export function useBoardStore(boardIdx: number, level: number) {
   const [_, setState] = useState(0);
   const board = buildBoard(
     boardIdx,
-    gameState.bitset(6, "x"),
-    gameState.bitset(6, "o")
+    gameState.bitset(level, "x"),
+    gameState.bitset(level, "o")
   );
 
   useEffect(() => {

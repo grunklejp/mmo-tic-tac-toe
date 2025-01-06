@@ -27,9 +27,13 @@ Current goal:
     - [ ] don't let user click on entire sections that are won
   - [ ] recursively check win & update state on the server
   - [x] define level specific updates for protocol
-  - [ ] level selector
-  - [ ] make levels show proper state
+  - [x] level selector
+  - [x] make levels show proper state
+  - [ ] make LevelBoards (boards that don't trigger a player move)
   - [x] check for stalemate
   - [x] clear boards recursively on stalemate
   - [ ] validate on server that users can only make moves on the highest level (6)
   - [ ] empty cells in won boards should be greyed out
+  - [ ] save current selected level in local state
+  - [ ] save current scroll position in local state
+  - [ ] rerender screen when a board resets above the below the 6th level

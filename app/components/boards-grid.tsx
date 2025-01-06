@@ -23,8 +23,6 @@ export function BoardsGrid({ ...props }: Props) {
   const boardGroupsThisLevel = Math.pow(9, level - 1);
   const sideCount = Math.sqrt(boardGroupsThisLevel);
 
-  console.log(level, sideCount);
-
   return (
     <Grid
       key={props.key}
@@ -64,8 +62,8 @@ export function BoardsGrid({ ...props }: Props) {
               );
               return (
                 <Board
+                  level={level}
                   key={`board-${boardIndex}`}
-                  nextTurn="x"
                   boardIndex={boardIndex}
                 />
               );
@@ -79,13 +77,13 @@ export function BoardsGrid({ ...props }: Props) {
 
 type BoardProps = {
   boardIndex: number;
-  nextTurn: "x" | "o" | null;
+  level: number;
 };
 
-function Board({ boardIndex, nextTurn }: BoardProps) {
+function Board({ boardIndex, level }: BoardProps) {
   const team = useTeam();
   const protocol = useProtocol();
-  const { board } = useBoardStore(boardIndex);
+  const { board } = useBoardStore(boardIndex, level);
   const turn = getNextTurn(board, boardIndex);
   const isPlayerTurn = turn === team;
   const turnDependentClasses = turn === "x" ? "bg-red-100" : "bg-blue-100";
