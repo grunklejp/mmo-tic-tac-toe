@@ -1,8 +1,8 @@
 // Everything having to do with our binary websocket protocol
 
-import { BYTES_FOR_SEQ_NUM, LEVELS } from "config";
+import { BYTES_FOR_SEQ_NUM, MAX_LEVEL } from "config";
 
-const totalBoardCount = Math.pow(9, LEVELS);
+const totalBoardCount = Math.pow(9, MAX_LEVEL);
 
 const PATCH_PAYLOAD_LENGTH = 4; // bytes
 
@@ -75,7 +75,7 @@ export function deserializeMove(move: Uint8Array): Move {
 export function serializeMove(move: Move) {
   const { board, cell, sequence, level } = move;
 
-  if (level > LEVELS || level < 1) {
+  if (level > MAX_LEVEL || level < 1) {
     throw new Error("invariant failed, invalid level range");
   }
 

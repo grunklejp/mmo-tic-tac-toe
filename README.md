@@ -24,6 +24,7 @@ Current goal:
   - [x] make move from the client
   - [ ] check win
     - [x] don't let user click on boards that are won
+    - [ ] don't let user click on entire sections that are won
   - [ ] recursively check win & update state on the server
   - [x] define level specific updates for protocol
   - [ ] level selector
@@ -31,3 +32,4 @@ Current goal:
   - [x] check for stalemate
   - [x] clear boards recursively on stalemate
   - [ ] validate on server that users can only make moves on the highest level (6)
+  - [ ] empty cells in won boards should be greyed out

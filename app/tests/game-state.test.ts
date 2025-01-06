@@ -1,9 +1,9 @@
-import { BOARD_COUNT, BYTES_FOR_SEQ_NUM } from "config";
+import { BYTES_FOR_SEQ_NUM } from "config";
 import { test, expect } from "vitest";
 import { GameState } from "~/game-state";
 
 test("byteLength is correct", () => {
-  const level0Size = 0;
+  const level0Size = Math.ceil((Math.pow(9, 0) * 9) / 8) * 2;
   const level1Size = Math.ceil((Math.pow(9, 1) * 9) / 8) * 2;
   const level2Size = Math.ceil((Math.pow(9, 2) * 9) / 8) * 2;
   const level3Size = Math.ceil((Math.pow(9, 3) * 9) / 8) * 2;

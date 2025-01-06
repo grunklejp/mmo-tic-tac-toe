@@ -59,8 +59,8 @@ export class GameState {
 
   private calcBufferSize(levels: number): number {
     let result = BYTES_FOR_SEQ_NUM;
-    this.levelByteOffsets = [0, BYTES_FOR_SEQ_NUM]; // first level starts after sequence num (0 is filler since we have no 0th level)
-    for (let i = 1; i <= levels; i++) {
+    this.levelByteOffsets = [BYTES_FOR_SEQ_NUM]; // first level starts after sequence num
+    for (let i = 0; i < levels + 1; i++) {
       const bytesPerLevel = this.calcSizeByLevel(i);
       result += bytesPerLevel;
       if (i !== levels) {

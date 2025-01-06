@@ -1,11 +1,6 @@
 import { LEVELS } from "config";
 import { type Move } from "~/protocol";
-import {
-  asBitString,
-  getBit,
-  getNextTurnFromMoveCount,
-  writeSnapshot,
-} from "~/utils";
+import { getBit, getNextTurnFromMoveCount, writeSnapshot } from "~/utils";
 import { SequenceLog } from "./sequence-log";
 import { GameState } from "~/game-state";
 import { checkWin } from "~/game";

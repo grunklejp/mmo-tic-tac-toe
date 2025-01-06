@@ -25,7 +25,6 @@ import { setSignedCookie } from "hono/cookie";
 import type { SequenceLog } from "./sequence-log";
 import { isDrawLazy, checkWin, clearBoard, makeMove } from "~/game";
 import type { GameState } from "~/game-state";
-import { MAX_LEVEL } from "config";
 
 const app = new Hono();
 

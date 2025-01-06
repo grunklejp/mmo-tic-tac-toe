@@ -1,10 +1,10 @@
-import { LEVELS } from "config";
+import { MAX_LEVEL } from "config";
 import { useEffect, useState } from "react";
 import type { Move } from "~/protocol";
 import { gameState } from "~/state";
 import { getBit, getLastTurn, setBitAs } from "~/utils";
 
-const totalBoardCount = Math.pow(9, LEVELS);
+const totalBoardCount = Math.pow(9, MAX_LEVEL);
 
 export type ClientMove = {
   level: number;

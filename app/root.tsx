@@ -31,7 +31,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         {/* <script src="https://unpkg.com/react-scan/dist/auto.global.js"></script> */}
-
         <Meta />
         <Links />
       </head>

@@ -3,6 +3,8 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { TeamProvider } from "~/components/team-provider";
 import { SyncStateProvider } from "~/components/sync-state-provider";
 import { BoardsGrid } from "~/components/boards-grid";
+import { LevelProvider, LevelSelector } from "~/components/level-selector";
+import { LEVELS } from "config";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -16,14 +18,17 @@ export default function Home() {
     <TeamProvider>
       <SyncStateProvider>
         {(renderKey) => (
-          <div className="flex flex-col h-screen">
-            <header className="flex flex-col align-center m-4">
-              <h1 className="text-4xl font-bold">MMO Tic-Tac-Toe</h1>
-            </header>
-            <DynamicContainer className="m-4 relative bg-white border border-gray-400 rounded-sm shadow-inner overflow-hidden">
-              {(dims) => <BoardsGrid dims={dims} key={renderKey} level={6} />}
-            </DynamicContainer>
-          </div>
+          <LevelProvider levels={LEVELS}>
+            <div className="flex flex-col h-screen">
+              <header className="flex flex-col align-center items-center m-4 gap-3">
+                <h1 className="text-4xl font-bold">MMO Tic-Tac-Toe</h1>
+                <LevelSelector />
+              </header>
+              <DynamicContainer className="m-4 relative bg-white border border-gray-400 rounded-sm shadow-inner overflow-hidden">
+                {(dims) => <BoardsGrid dims={dims} key={renderKey} />}
+              </DynamicContainer>
+            </div>
+          </LevelProvider>
         )}
       </SyncStateProvider>
     </TeamProvider>

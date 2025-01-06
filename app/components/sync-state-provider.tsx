@@ -17,17 +17,15 @@ import {
   serializeMove,
   SERVER_MSG,
   type Message,
-  type Move,
 } from "~/protocol";
 import {
   fromClientMove,
-  makeTurn,
   makeTurnAndRender,
   toClientMove,
   type ClientMove,
 } from "~/hooks/use-board-store";
 import { ReconnectWidget } from "./reconnect-widget";
-import { LEVELS, MAX_LEVEL } from "config";
+import { MAX_LEVEL } from "config";
 import { clearBoard } from "~/game";
 
 type Props = {
