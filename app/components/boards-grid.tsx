@@ -53,7 +53,7 @@ export function BoardsGrid({ ...props }: Props) {
             } border-gray-400 p-2`}
           >
             <span className="pointer-events-none top-0 font-medium text-gray-400 left-0.5 absolute m-auto z-10 text-xs">
-              {(boardIndex * Math.pow(9, levels - level)).toLocaleString()}
+              {(boardIndex * Math.pow(9, levels - level - 1)).toLocaleString()}
             </span>
             {new Array(level === 0 ? 1 : 9).fill(0).map((_, i) => {
               const boardIndex = getBoardIndexFromGrid(
