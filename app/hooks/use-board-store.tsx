@@ -7,6 +7,7 @@ import { getBit, getLastTurn, setBitAs } from "~/utils";
 const totalBoardCount = Math.pow(9, LEVELS);
 
 export type ClientMove = {
+  level: number;
   board: number;
   cell: number;
   value: "x" | "o";
@@ -27,6 +28,7 @@ function batchUpdateNBits(n: number) {
     const randomCell = Math.floor(Math.random() * 9);
     const randomTurn = Math.floor(Math.random() * 2) == 1 ? "x" : "o";
     makeTurnAndRender({
+      level: 6,
       board: randomBoard,
       cell: randomCell,
       value: randomTurn,
@@ -53,12 +55,12 @@ export function makeTurnAndRender(move: ClientMove) {
 }
 
 export function makeTurn(move: ClientMove) {
-  const { board, cell, value } = move;
+  const { board, cell, value, level } = move;
   const bitIndex = board * 9 + cell;
   if (value === "x") {
-    setBitAs(gameState.bitset(6, "x"), bitIndex, 1);
+    setBitAs(gameState.bitset(level, "x"), bitIndex, 1);
   } else {
-    setBitAs(gameState.bitset(6, "o"), bitIndex, 1);
+    setBitAs(gameState.bitset(level, "o"), bitIndex, 1);
   }
 }
 
@@ -117,6 +119,7 @@ export function toClientMove(move: Move): ClientMove {
   const movesMade = move.sequence + 1;
   const turn = getLastTurn(move.board, movesMade);
   return {
+    level: move.level,
     board: move.board,
     cell: move.cell,
     value: turn,
@@ -131,6 +134,7 @@ export function fromClientMove(
   const sequence = countMoves(move.board, xBitset, oBitset);
 
   return {
+    level: move.level,
     board: move.board,
     cell: move.cell,
     sequence: sequence,

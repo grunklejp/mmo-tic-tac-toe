@@ -1,3 +1,8 @@
+import { MAX_LEVEL } from "config";
+import type { GameState } from "./game-state";
+import type { Move } from "./protocol";
+import { setBit } from "./utils";
+
 // prettier-ignore
 const winConditionMasks = [
   0b111_000_000,
@@ -17,8 +22,6 @@ export function checkWin(
 ): "x" | "o" | null {
   const xBoardValue = getBoardValue(board, xBitset);
   const oBoardValue = getBoardValue(board, oBitset);
-  console.log(xBoardValue);
-  console.log(xBoardValue.toString(2));
 
   for (let mask of winConditionMasks) {
     if (checkWinCon(xBoardValue, mask)) {
@@ -59,4 +62,68 @@ export function getBoardValue(board: number, bitset: Uint8Array): number {
 
   const result = mostSignificant9bit ^ leastSignificant9Bits;
   return result;
+}
+
+/**
+ * Checks if a board is stalemate, assumes board has not been won.
+ */
+export function isDrawLazy(
+  board: number,
+  xBitset: Uint8Array,
+  oBitset: Uint8Array
+) {
+  const xVal = getBoardValue(board, xBitset);
+  const oVal = getBoardValue(board, oBitset);
+  const total = xVal | oVal;
+  return total === Math.pow(2, 9) - 1;
+}
+
+/**
+ * places a peice on the give half of a board
+ * DOES NO VALIDATION
+ * @param move
+ * @param turnBitset
+ */
+export function makeMove(move: Move, turnBitset: Uint8Array) {
+  const boardStartIndex = move.board * 9;
+  setBit(turnBitset, boardStartIndex + move.cell);
+}
+
+/**
+ * Clears a board at a specific level and all boards above it in the board tree
+ */
+export function clearBoard(state: GameState, board: number, level: number) {
+  let startBit = board;
+
+  for (let i = level; i <= MAX_LEVEL; i++) {
+    const xBitset = state.bitset(i, "x");
+    const oBitset = state.bitset(i, "o");
+    startBit = startBit * 9;
+    const boardsToClearThisLevel = Math.pow(9, i - level);
+
+    clearBoardsFromBuffer(startBit, boardsToClearThisLevel, xBitset);
+    clearBoardsFromBuffer(startBit, boardsToClearThisLevel, oBitset);
+  }
+}
+
+export function clearBoardsFromBuffer(
+  startBit: number,
+  count: number,
+  bitset: Uint8Array
+) {
+  const endBit = count * 9 + startBit;
+  const startByte = Math.floor(startBit / 8);
+  const endByte = Math.floor(endBit / 8);
+  const startBitOffset = startBit % 8;
+  const endBitOffset = endBit - endByte * 8;
+
+  const startMask = ~((255 >> startBitOffset) & 0xff); // Bits to keep
+  bitset[startByte] = bitset[startByte] & startMask;
+
+  const endMask = (255 >> endBitOffset) & 0xff; // Bits to keep
+  bitset[endByte] = bitset[endByte] & endMask;
+
+  if (startByte + 1 <= endByte - 1) {
+    bitset.fill(0, startByte + 1, endByte);
+  }
 }

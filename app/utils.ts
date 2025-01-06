@@ -143,3 +143,11 @@ export function getLastTurn(boardNumber: number, movesMade: number) {
 
   throw new Error("Invariant failed");
 }
+
+export function asBitString(val: number | Uint8Array) {
+  if (typeof val === "number") {
+    return val.toString(2).padStart(8, "0");
+  }
+
+  return Array.from(val).map((v) => v.toString(2).padStart(8, "0"));
+}

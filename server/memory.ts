@@ -1,13 +1,14 @@
 import { LEVELS } from "config";
-import type { Move } from "~/protocol";
+import { type Move } from "~/protocol";
 import {
+  asBitString,
   getBit,
   getNextTurnFromMoveCount,
-  setBit,
   writeSnapshot,
 } from "~/utils";
 import { SequenceLog } from "./sequence-log";
 import { GameState } from "~/game-state";
+import { checkWin } from "~/game";
 
 export const sequences = new SequenceLog();
 export const memoryState = new GameState(LEVELS);
@@ -36,12 +37,12 @@ function loadSnapshot(buff: ArrayBuffer) {
  * @param xBitset
  * @param oBitset
  */
-export function attemptMove(
+export function isMoveValid(
   move: Move,
   xBitset: Uint8Array,
   oBitset: Uint8Array,
   userTeam: "x" | "o"
-): { success: true } | { success: false; error: string } {
+): boolean {
   const { board, cell, sequence } = move;
   // find the boards,
   const boardStartIndex = board * 9;
@@ -60,10 +61,8 @@ export function attemptMove(
   // make sure move sequence match
   // if we've made 3 moves the next move needs to have a sequence number of 3 (0-indexed, 4th move)
   if (sequence !== movesMade) {
-    return {
-      success: false,
-      error: "Invalid move sequence",
-    };
+    console.error("Invalid move sequence");
+    return false;
   }
 
   // make sure cell is empty in both bitsets
@@ -72,33 +71,24 @@ export function attemptMove(
     getBit(oBitset, boardStartIndex + cell) === 0;
 
   if (!cellEmpty) {
-    return {
-      success: false,
-      error: "Cell isn't empty",
-    };
+    console.error("Cell isn't empty");
+    return false;
+  }
+
+  // make sure this board hasn't already been won
+  if (checkWin(board, xBitset, oBitset) !== null) {
+    console.error("Board has already been finished");
+    return false;
   }
 
   const next = getNextTurnFromMoveCount(movesMade, board);
 
   if (next !== userTeam) {
-    return {
-      success: false,
-      error: "Not user's team's turn",
-    };
+    console.error("Not user's team's turn");
+    return false;
   }
 
-  // update board
-  if (next === "o") {
-    setBit(oBitset, boardStartIndex + cell);
-  } else {
-    setBit(xBitset, boardStartIndex + cell);
-  }
-
-  // TODO: fire async checkwin()
-
-  return {
-    success: true,
-  };
+  return true;
 }
 
 export { beginWritingSnapshot, loadSnapshot };

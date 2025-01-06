@@ -17,6 +17,7 @@ ws.onmessage = (event) => {
 
 function makeRandomMove(ws: WebSocket) {
   const payload = serializeMove({
+    level: 6,
     // board: Math.floor(Math.random() * BOARD_COUNT),
     board: Math.floor(Math.random() * 40000),
     cell: Math.floor(Math.random() * 9),

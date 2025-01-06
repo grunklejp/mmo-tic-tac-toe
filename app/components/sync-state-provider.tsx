@@ -10,11 +10,13 @@ import {
 import { parseSnapshot, gameState } from "~/state";
 import {
   buildMoveMessage,
-  deserializeBatchPatch,
+  deserializeBatchUpdate,
+  deserializeClearBoard,
   deserializeMove,
   parseMessage,
   serializeMove,
   SERVER_MSG,
+  type Message,
   type Move,
 } from "~/protocol";
 import {
@@ -25,6 +27,8 @@ import {
   type ClientMove,
 } from "~/hooks/use-board-store";
 import { ReconnectWidget } from "./reconnect-widget";
+import { LEVELS, MAX_LEVEL } from "config";
+import { clearBoard } from "~/game";
 
 type Props = {
   children: (renderKey: React.Key) => ReactNode;
@@ -102,14 +106,18 @@ export function SyncStateProvider({ children }: Props) {
       const msg = parseMessage(new Uint8Array(event.data));
 
       switch (msg.kind) {
-        case SERVER_MSG.PATCH: {
-          const orderedMove = deserializeMove(msg.payload);
-          const clientMove = toClientMove(orderedMove);
-          makeTurnAndRender(clientMove);
+        case SERVER_MSG.PATCH_MOVE: {
+          patchMoveAction(msg.payload);
           break;
         }
-        case SERVER_MSG.BATCH_PATCH: {
-          const { sequenceStart, moves } = deserializeBatchPatch(msg.payload);
+        case SERVER_MSG.CLEAR_BOARD: {
+          clearBoardPayload(msg.payload);
+          break;
+        }
+        case SERVER_MSG.BATCH_UPDATE: {
+          const { sequenceStart, updates } = deserializeBatchUpdate(
+            msg.payload
+          );
 
           // check if our snapshot is out of date
           if (sequenceStart > gameState.sequenceNumber) {
@@ -118,7 +126,8 @@ export function SyncStateProvider({ children }: Props) {
             );
             setNeedRefresh(true);
           } else {
-            startSync(moves, () => {
+            setSyncing(true);
+            startSync(updates, () => {
               setSyncing(false);
             });
           }
@@ -145,11 +154,20 @@ export function useProtocol() {
   return useContext(protocolContext);
 }
 
-function startSync(moves: Move[], onFinish: () => void) {
-  console.log("syncing", moves.length, "moves since snapshot");
+function startSync(updates: Message[], onFinish: () => void) {
+  console.log("syncing", updates.length, "updates since snapshot");
 
-  for (let move of moves) {
-    makeTurnAndRender(toClientMove(move));
+  for (let update of updates) {
+    switch (update.kind) {
+      case SERVER_MSG.PATCH_MOVE: {
+        patchMoveAction(update.payload);
+        break;
+      }
+      case SERVER_MSG.CLEAR_BOARD: {
+        clearBoardPayload(update.payload);
+        break;
+      }
+    }
   }
 
   onFinish();
@@ -161,4 +179,36 @@ function attemptClientMove(move: ClientMove, ws: WebSocket) {
   );
   const message = buildMoveMessage(serliazed);
   ws.send(message);
+}
+
+function patchMoveAction(payload: Uint8Array) {
+  const orderedMove = deserializeMove(payload);
+  const clientMove = toClientMove(orderedMove);
+
+  // if this move is at a lowerver level than the player level
+  // we should infer the turn from move.sequence being 1(x) or 0(o) instead.
+  if (clientMove.level < MAX_LEVEL) {
+    const turn = orderedMove.sequence;
+
+    if (turn !== 1 && turn !== 0) {
+      throw new Error(
+        "Invriant failed, server did not properly encode turn sequence for non player level"
+      );
+    }
+
+    makeTurnAndRender({
+      ...clientMove,
+      value: turn === 1 ? "x" : "o",
+    });
+  } else {
+    makeTurnAndRender(clientMove);
+  }
+}
+
+function clearBoardPayload(payload: Uint8Array<ArrayBufferLike>) {
+  const { board, level } = deserializeClearBoard(payload);
+
+  console.log("clearing board:", board, "level:", level);
+
+  clearBoard(gameState, board, level);
 }

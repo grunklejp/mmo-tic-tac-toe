@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { createBunWebSocket, serveStatic } from "hono/bun";
 import { type ServerWebSocket } from "bun";
 import {
-  attemptMove,
+  isMoveValid,
   beginWritingSnapshot,
   loadSnapshot,
   memoryState,
@@ -10,14 +10,22 @@ import {
 } from "./memory";
 import { testing_createRandomSnapshotFile } from "~/utils";
 import {
-  buildBatchPatchMessage,
-  buildPatchMessage,
+  buildBatchUpdatesMessage,
+  buildClearBoardMessage,
+  buildPatchMoveMessage,
   CLIENT_MSG,
   deserializeMove,
   parseMessage,
+  serializeClearBoard,
+  serializeMove,
+  type Move,
 } from "~/protocol";
 import { getRandomTeam, getTeam } from "./team";
 import { setSignedCookie } from "hono/cookie";
+import type { SequenceLog } from "./sequence-log";
+import { isDrawLazy, checkWin, clearBoard, makeMove } from "~/game";
+import type { GameState } from "~/game-state";
+import { MAX_LEVEL } from "config";
 
 const app = new Hono();
 
@@ -63,22 +71,21 @@ app.get(
               const xbitset = memoryState.bitset(6, "x");
               const obitset = memoryState.bitset(6, "o");
 
-              const result = attemptMove(move, xbitset, obitset, userTeam);
-              if (result.success) {
-                sequences.append(payload);
-                const patchUpdate = buildPatchMessage(payload);
-                socket.publishBinary("patch-updates", patchUpdate, true);
-                ws.send(patchUpdate); // publish doesn't send to client that triggered it, so we need to send it manually
-              }
+              const isValid = isMoveValid(move, xbitset, obitset, userTeam);
 
-              console.log(
-                "attempted move",
-                JSON.stringify(move),
-                "| result:",
-                result.success
-                  ? result.success
-                  : `${result.success} ${result.error}`
-              );
+              if (isValid) {
+                propagateMoveAndPublish(
+                  move,
+                  userTeam,
+                  memoryState,
+                  socket,
+                  sequences
+                );
+                // sequences.append(payload);
+                // const patchUpdate = buildPatchMessage(payload);
+                // socket.publishBinary("patch-updates", patchUpdate, true);
+                // ws.send(patchUpdate); // publish doesn't send to client that triggered it, so we need to send it manually
+              }
             }
           }
         } else {
@@ -90,7 +97,7 @@ app.get(
 
         // Send the most recent messages since the latest snapshot
         const movesSinceLastSnapshot = sequences.flatten();
-        const catchUpMSG = buildBatchPatchMessage(
+        const catchUpMSG = buildBatchUpdatesMessage(
           movesSinceLastSnapshot,
           sequences.earliest
         );
@@ -130,3 +137,48 @@ export default {
   fetch: app.fetch,
   websocket,
 };
+
+// TODO: test!
+export function propagateMoveAndPublish(
+  move: Move,
+  turn: "x" | "o",
+  state: GameState,
+  socket: ServerWebSocket,
+  sequenceLog: SequenceLog
+) {
+  const xBitset = state.bitset(move.level, "x");
+  const oBitset = state.bitset(move.level, "o");
+
+  makeMove(move, turn === "x" ? xBitset : oBitset);
+
+  const patchPayload = buildPatchMoveMessage(serializeMove(move));
+  sequenceLog.append(patchPayload);
+  socket.publishBinary("patch-updates", patchPayload, true);
+  socket.send(patchPayload); // publish doesn't send to client that triggered it, so we need to send it manually
+
+  const winner = checkWin(move.board, xBitset, oBitset);
+
+  // we have a winner,
+  if (winner !== null) {
+    // make a move in the hire level board
+    move.board = move.board % 9;
+    move.cell = Math.floor(move.board / 9);
+    move.level--;
+    return propagateMoveAndPublish(move, turn, state, socket, sequenceLog);
+  }
+
+  const stalemate = isDrawLazy(move.board, xBitset, oBitset);
+
+  if (stalemate) {
+    clearBoard(state, move.board, move.level);
+
+    const patchPayload = buildClearBoardMessage(
+      serializeClearBoard(move.board, move.level)
+    );
+    sequenceLog.append(patchPayload);
+    socket.publishBinary("patch-updates", patchPayload, true);
+    socket.send(patchPayload); // publish doesn't send to client that triggered it, so we need to send it manually
+  }
+
+  return;
+}

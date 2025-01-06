@@ -9,10 +9,10 @@ export class SequenceLog {
     this.log = new Map();
   }
 
-  append(move: Uint8Array) {
+  append(update: Uint8Array) {
     this.max++;
-    this.log.set(this.max, move);
-    console.log("appending sequence", this.max, move);
+    this.log.set(this.max, update);
+    console.log("appending sequence", this.max, update);
     console.log("current log size", this.log.size);
   }
 
@@ -25,26 +25,26 @@ export class SequenceLog {
   }
 
   /**
-   * flattens all moves into a single uint8array
+   * flattens all updates into a single uint8array
    */
   flatten(): Uint8Array {
-    const moves = this.log.values();
-    const first = moves.next();
+    const updates = this.log.values();
+    const first = updates.next();
 
     if (!first.value) {
       return new Uint8Array();
     }
 
-    const moveByteLength = first.value.byteLength;
+    const updateByteLength = first.value.byteLength;
 
     let offset = 0;
-    const buffer = new Uint8Array(moveByteLength * this.log.size);
+    const buffer = new Uint8Array(updateByteLength * this.log.size);
     buffer.set(first.value, offset);
-    offset += moveByteLength;
+    offset += updateByteLength;
 
-    for (const move of moves) {
-      buffer.set(move, offset);
-      offset += moveByteLength;
+    for (const update of updates) {
+      buffer.set(update, offset);
+      offset += updateByteLength;
     }
 
     return buffer;

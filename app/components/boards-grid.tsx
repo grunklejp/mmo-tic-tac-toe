@@ -101,6 +101,7 @@ function Board({ boardIndex, nextTurn }: BoardProps) {
                 }
 
                 protocol.move({
+                  level: 6,
                   board: boardIndex,
                   cell: i,
                   value: turn,
