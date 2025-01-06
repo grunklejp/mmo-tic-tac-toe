@@ -75,7 +75,7 @@ export function deserializeMove(move: Uint8Array): Move {
 export function serializeMove(move: Move) {
   const { board, cell, sequence, level } = move;
 
-  if (level > MAX_LEVEL || level < 1) {
+  if (level > MAX_LEVEL || level < 0) {
     throw new Error("invariant failed, invalid level range");
   }
 
@@ -99,7 +99,7 @@ export function serializeMove(move: Move) {
   buff[3] = shiftedSequence | maskedCell;
 
   // set level
-  buff[0] = buff[0] | shiftedLevel;
+  buff[0] = (buff[0] & 0b00001111) | shiftedLevel;
   return buff;
 }
 

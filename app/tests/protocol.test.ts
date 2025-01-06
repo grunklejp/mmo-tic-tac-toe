@@ -12,10 +12,10 @@ import {
   SERVER_MSG,
   type Move,
 } from "~/protocol";
+import { asBitString } from "~/utils";
 
 test("serializeMove to work", () => {
   const empty = serializeMove({ board: 0, cell: 0, sequence: 0, level: 1 });
-  console.log("YO", empty);
   expect(empty.byteLength).toBe(4);
   expect(empty).toStrictEqual(new Uint8Array([0b0001_0000, 0, 0, 0]));
   expect(
@@ -24,6 +24,19 @@ test("serializeMove to work", () => {
   expect(
     serializeMove({ board: 8, cell: 8, sequence: 8, level: 1 })
   ).toStrictEqual(new Uint8Array([0b0001_0000, 0, 8, 0b10001000]));
+});
+
+test("serializeMove works on level 0", () => {
+  const board = Math.pow(2, 32 - 4) - 1;
+  const empty = serializeMove({ board: board, cell: 0, sequence: 0, level: 0 });
+  expect(empty.byteLength).toBe(4);
+  expect(empty).toStrictEqual(new Uint8Array([0b0000_1111, 255, 255, 0]));
+  expect(
+    serializeMove({ board: 1, cell: 1, sequence: 1, level: 0 })
+  ).toStrictEqual(new Uint8Array([0b0000_0000, 0, 1, 0b00010001]));
+  expect(
+    serializeMove({ board: 8, cell: 8, sequence: 8, level: 0 })
+  ).toStrictEqual(new Uint8Array([0b0000_0000, 0, 8, 0b10001000]));
 });
 
 test("deserializeRawMove works", () => {
@@ -92,7 +105,7 @@ test("integration with batch updating", () => {
       board: Math.floor(Math.random() * BOARD_COUNT),
       cell: Math.floor(Math.random() * 9),
       sequence: Math.floor(Math.random() * 9),
-      level: 1,
+      level: 0,
     };
   });
 
