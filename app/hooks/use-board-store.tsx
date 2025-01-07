@@ -1,5 +1,7 @@
 import { MAX_LEVEL } from "config";
 import { useEffect, useState } from "react";
+import { checkWin } from "~/game";
+import type { GameState } from "~/game-state";
 import type { Move } from "~/protocol";
 import { gameState } from "~/state";
 import { getBit, getLastTurn, setBitAs } from "~/utils";
@@ -66,11 +68,13 @@ export function makeTurn(move: ClientMove) {
 
 export function useBoardStore(boardIdx: number, level: number) {
   const [_, setState] = useState(0);
-  const board = buildBoard(
-    boardIdx,
-    gameState.bitset(level, "x"),
-    gameState.bitset(level, "o")
-  );
+  const xBitset = gameState.bitset(level, "x");
+  const oBitset = gameState.bitset(level, "o");
+
+  const board = buildBoard(boardIdx, xBitset, oBitset);
+  const winner = checkWin(boardIdx, xBitset, oBitset);
+
+  const hasAncestralWinner = checkAncestralWin(boardIdx, level, gameState);
 
   useEffect(() => {
     listeners.set(boardIdx, () => setState((s) => (s === 1 ? 0 : 1)));
@@ -87,7 +91,7 @@ export function useBoardStore(boardIdx: number, level: number) {
     };
   }, []);
 
-  return { board };
+  return { board, winner, hasAncestralWinner };
 }
 
 // TODO: test this...
@@ -158,4 +162,15 @@ export function countMoves(
     }
   }
   return count;
+}
+
+// TODO:
+function checkAncestralWin(
+  boardIdx: number,
+  level: number,
+  gameState: GameState
+): boolean {
+  // throw new Error("Function not implemented.");
+
+  return false;
 }
