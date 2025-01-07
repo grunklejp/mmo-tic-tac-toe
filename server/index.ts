@@ -157,13 +157,24 @@ export function propagateMoveAndPublish(
 
   const winner = checkWin(move.board, xBitset, oBitset);
 
-  // we have a winner,
+  // we have a winner!
   if (winner !== null) {
-    // make a move in the hire level board
-    move.board = move.board % 9;
-    move.cell = Math.floor(move.board / 9);
-    move.level--;
-    return propagateMoveAndPublish(move, turn, state, socket, sequenceLog);
+    // TODO: trigger endgame state
+    if (move.level === 0) {
+      console.log("GAME OVER");
+      return;
+    }
+
+    // make a move in the lower-level board
+    const newMove: Move = {
+      level: move.level - 1,
+      board: Math.floor(move.board / 9),
+      cell: move.board % 9,
+      // we must encode the sequence as a turn (0 for o, 1 for x)
+      sequence: turn === "x" ? 1 : 0,
+    };
+
+    return propagateMoveAndPublish(newMove, turn, state, socket, sequenceLog);
   }
 
   const stalemate = isDrawLazy(move.board, xBitset, oBitset);
