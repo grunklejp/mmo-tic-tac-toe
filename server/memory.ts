@@ -1,4 +1,4 @@
-import { LEVELS } from "config";
+import { LEVELS, MAX_LEVEL } from "config";
 import { type Move } from "~/protocol";
 import { getBit, getNextTurnFromMoveCount, writeSnapshot } from "~/utils";
 import { SequenceLog } from "./sequence-log";
@@ -41,6 +41,12 @@ export function isMoveValid(
   const { board, cell, sequence } = move;
   // find the boards,
   const boardStartIndex = board * 9;
+
+  // check that the level is playable
+  if (move.level !== MAX_LEVEL) {
+    console.error("Invalid move level");
+    return false;
+  }
 
   // count the total moves
   let movesMade = 0;

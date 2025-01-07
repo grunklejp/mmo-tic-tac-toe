@@ -31,12 +31,14 @@ Current goal:
 - [x] make non max level board not trigger a move
 - [x] check for stalemate
 - [x] clear boards recursively on stalemate
-- [ ] validate on server that users can only make moves on the highest level (6)
+- [x] validate on server that users can only make moves on the highest level (6)
 - [x] empty cells in won boards should be greyed out
 - [ ] cell tint color (i level < max_level) should be determined by number of number of wins in that section in higher levels
 - [ ] save current selected level in local state
 - [ ] save current scroll position in local state
 - [ ] rerender screen when a board resets above the below the 6th level
+- [ ] team indicator
+- [ ] 🐞 clients aren't recieving messages that were sent just before connecting
 
 POLISH 🇵🇱
 

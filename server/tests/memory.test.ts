@@ -1,6 +1,7 @@
 import { test, expect } from "vitest";
 import { isMoveValid } from "../memory";
 import type { Move } from "~/protocol";
+import { MAX_LEVEL } from "config";
 
 test("isMoveValid", () => {
   const boards = 9;
@@ -13,12 +14,27 @@ test("isMoveValid", () => {
     board: 0,
     cell: 0,
     sequence: 0,
-    level: 1,
+    level: MAX_LEVEL,
   };
 
   const result = isMoveValid(move, xBitset, oBitset, "o");
 
   expect(result).toBe(true);
+});
+
+test("isMoveValid prevents users from manually submitting below the last level", () => {
+  const xBitset = new Uint8Array(2);
+  const oBitset = new Uint8Array(2);
+  const move: Move = {
+    board: 0,
+    cell: 0,
+    sequence: 0,
+    level: MAX_LEVEL - 1,
+  };
+
+  const result = isMoveValid(move, xBitset, oBitset, "o");
+
+  expect(result).toBe(false);
 });
 
 // test("X's don't overwrite O's", () => {
