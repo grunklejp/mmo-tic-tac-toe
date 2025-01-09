@@ -3,7 +3,7 @@ import { type Move } from "~/protocol";
 import { getBit, getNextTurnFromMoveCount, writeSnapshot } from "~/utils";
 import { SequenceLog } from "./sequence-log";
 import { GameState } from "~/game-state";
-import { checkWin } from "~/game";
+import { checkAncestralWin, checkWin } from "~/game";
 
 export const sequences = new SequenceLog();
 export const memoryState = new GameState(LEVELS);
@@ -29,24 +29,29 @@ function loadSnapshot(buff: ArrayBuffer) {
 
 /**
  * Where most of the logic to the game is, this will likely be done in an embedded function in redis
- * @param xBitset
- * @param oBitset
  */
 export function isMoveValid(
   move: Move,
-  xBitset: Uint8Array,
-  oBitset: Uint8Array,
+  state: GameState,
   userTeam: "x" | "o"
 ): boolean {
-  const { board, cell, sequence } = move;
+  const { board, cell, sequence, level } = move;
   // find the boards,
   const boardStartIndex = board * 9;
 
   // check that the level is playable
-  if (move.level !== MAX_LEVEL) {
+  if (level !== MAX_LEVEL) {
     console.error("Invalid move level");
     return false;
   }
+
+  if (checkAncestralWin(board, level, state)) {
+    console.error("Move's board has ancestral winner already");
+    return false;
+  }
+
+  const xBitset = state.bitset(level, "x");
+  const oBitset = state.bitset(level, "o");
 
   // count the total moves
   let movesMade = 0;

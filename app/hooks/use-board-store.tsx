@@ -1,7 +1,6 @@
 import { MAX_LEVEL } from "config";
 import { useEffect, useState } from "react";
-import { checkWin } from "~/game";
-import type { GameState } from "~/game-state";
+import { checkAncestralWin, checkWin } from "~/game";
 import type { Move } from "~/protocol";
 import { gameState } from "~/state";
 import { getBit, getLastTurn, setBitAs } from "~/utils";
@@ -162,15 +161,4 @@ export function countMoves(
     }
   }
   return count;
-}
-
-// TODO:
-function checkAncestralWin(
-  boardIdx: number,
-  level: number,
-  gameState: GameState
-): boolean {
-  // throw new Error("Function not implemented.");
-
-  return false;
 }

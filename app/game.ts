@@ -1,7 +1,7 @@
 import { MAX_LEVEL } from "config";
 import type { GameState } from "./game-state";
 import type { Move } from "./protocol";
-import { setBit } from "./utils";
+import { asBitString, getBit, setBit } from "./utils";
 
 // prettier-ignore
 const winConditionMasks = [
@@ -126,4 +126,48 @@ export function clearBoardsFromBuffer(
   if (startByte + 1 <= endByte - 1) {
     bitset.fill(0, startByte + 1, endByte);
   }
+}
+
+export function checkAncestralWin(
+  startingBoard: number,
+  level: number,
+  state: GameState
+) {
+  for (let i = 0; i < level; i++) {
+    const bitToCheck = getBoardsBitIndexAtLevel(startingBoard, level, i);
+
+    // console.log(bitToCheck, startingBoard, level, i);
+
+    const xBitset = state.bitset(i, "x");
+    const oBitset = state.bitset(i, "o");
+    const hasX = getBit(xBitset, bitToCheck) === 1;
+    const hasO = getBit(oBitset, bitToCheck) === 1;
+
+    if (hasX || hasO) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+export function getBoardsBitIndexAtLevel(
+  startingBoard: number,
+  startingLevel: number,
+  targetLevel: number
+) {
+  if (targetLevel > startingLevel) {
+    throw new Error(
+      "invariant failed, target level must be less than starting level"
+    );
+  }
+
+  const diff = startingLevel - targetLevel;
+
+  let result = startingBoard;
+  for (let i = 0; i < diff - 1; i++) {
+    result = Math.floor(result / 9);
+  }
+
+  return result;
 }

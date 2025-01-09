@@ -1,4 +1,4 @@
-import { LEVELS } from "config";
+import { LEVELS, MAX_LEVEL } from "config";
 import { expect, test } from "vitest";
 import {
   isDrawLazy,
@@ -8,9 +8,12 @@ import {
   clearBoardsFromBuffer,
   getBoardValue,
   makeMove,
+  getBoardsBitIndexAtLevel,
+  checkAncestralWin,
 } from "~/game";
 import { GameState } from "~/game-state";
 import type { Move } from "~/protocol";
+import { setBitAs } from "~/utils";
 
 test("getBoardValue gets 0th board", () => {
   const bitset = new Uint8Array([0b0001_0000, 0b1100_1000, 0b1100_1000]);
@@ -164,4 +167,28 @@ test("check stalemate works", () => {
   const draw = isDrawLazy(0, xBitset, oBitset);
 
   expect(draw).toBe(true);
+});
+
+test("getBitIndexAtLevel", () => {
+  expect(getBoardsBitIndexAtLevel(59_000, 6, 0)).toBe(0);
+  expect(getBoardsBitIndexAtLevel(7, 6, 0)).toBe(0);
+  expect(getBoardsBitIndexAtLevel(59_050, 6, 0)).toBe(1);
+  // 9th board on 2nd level should translate to 9th bit on 1st level
+  expect(getBoardsBitIndexAtLevel(9, 2, 1)).toBe(9);
+  // 81st board on 2nd level should translate to
+  expect(getBoardsBitIndexAtLevel(9, 2, 1)).toBe(9);
+});
+
+test("checkAncestralWin", () => {
+  const state = new GameState(LEVELS);
+
+  const xBitset = state.bitset(0, "x");
+  setBitAs(xBitset, 0, 1);
+  expect(checkAncestralWin(30_000, 6, state)).toBe(true);
+  expect(checkAncestralWin(0, 1, state)).toBe(true);
+
+  const oBitset1stLevel = state.bitset(1, "o");
+
+  setBitAs(oBitset1stLevel, 9, 1);
+  expect(checkAncestralWin(9, 2, state)).toBe(true);
 });

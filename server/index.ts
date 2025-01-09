@@ -8,7 +8,7 @@ import {
   memoryState,
   sequences,
 } from "./memory";
-import { testing_createRandomSnapshotFile } from "~/utils";
+import { setBit, setBitAs, testing_createRandomSnapshotFile } from "~/utils";
 import {
   buildBatchUpdatesMessage,
   buildClearBoardMessage,
@@ -25,6 +25,7 @@ import { setSignedCookie } from "hono/cookie";
 import type { SequenceLog } from "./sequence-log";
 import { isDrawLazy, checkWin, clearBoard, makeMove } from "~/game";
 import type { GameState } from "~/game-state";
+import { gameState } from "~/state";
 
 const app = new Hono();
 
@@ -67,10 +68,7 @@ app.get(
                 throw new Error("Error: must have team to make move.");
               }
 
-              const xbitset = memoryState.bitset(6, "x");
-              const obitset = memoryState.bitset(6, "o");
-
-              const isValid = isMoveValid(move, xbitset, obitset, userTeam);
+              const isValid = isMoveValid(move, memoryState, userTeam);
 
               if (isValid) {
                 propagateMoveAndPublish(

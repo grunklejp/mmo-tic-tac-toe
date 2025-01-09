@@ -22,7 +22,7 @@ Current goal:
 - [x] make move from the client
 - [ ] check win
   - [x] don't let user click on boards that are won
-  - [ ] don't let user click or submit for entire sections that are won
+  - [x] don't let user click or submit for entire sections that are won
 - [x] recursively check win & update state on the server
   - [ ] test this
 - [x] define level specific updates for protocol
@@ -39,6 +39,8 @@ Current goal:
 - [ ] rerender screen when a board resets above the below the 6th level
 - [ ] team indicator
 - [ ] 🐞 clients aren't recieving messages that were sent just before connecting
+- [x] 🐞 higher level grids aren't aligned
+  - need to assign boardIds based on the alignment
 
 POLISH 🇵🇱
 

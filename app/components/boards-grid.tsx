@@ -6,6 +6,7 @@ import { useBoardStore } from "~/hooks/use-board-store";
 import { getNextTurn } from "~/utils";
 import { useLevels } from "./level-selector";
 import { MAX_LEVEL } from "config";
+import { calculateBoardId } from "~/grid-layout";
 
 type Props = {
   key?: React.Key;
@@ -36,14 +37,13 @@ export function BoardsGrid({ ...props }: Props) {
       width={props.dims.w}
     >
       {(props) => {
-        const boardIndex = getBoardIndexFromGrid(
-          props.columnIndex,
+        // although this is for calculating the boardID it works fine to calculate the grid ID
+        const gridIndex = calculateBoardId(
+          level,
           props.rowIndex,
-          sideCount,
-          0
+          props.columnIndex
         );
 
-        // If the level is not a playable level
         return (
           <div
             style={props.style}
@@ -52,24 +52,19 @@ export function BoardsGrid({ ...props }: Props) {
             } border-gray-400 p-2`}
           >
             <span className="pointer-events-none top-0 font-medium text-gray-400 left-0.5 absolute m-auto z-10 text-xs">
-              {(boardIndex * Math.pow(9, levels - level - 1)).toLocaleString()}
+              {gridIndex}
             </span>
             {level === 0 ? (
               <Board level={level} key={`board-${0}`} boardIndex={0} />
             ) : (
               new Array(level === 0 ? 1 : 9).fill(0).map((_, i) => {
-                const bIndex = getBoardIndexFromGrid(
-                  props.columnIndex,
-                  props.rowIndex,
-                  sideCount,
-                  i
-                );
+                const bIndex = gridIndex + i;
 
                 return (
                   <Board
                     level={level}
                     key={`board-${level}-${bIndex}`}
-                    boardIndex={bIndex}
+                    boardIndex={getBoardIndexFromGridId(gridIndex, i)}
                   />
                 );
               })
@@ -147,9 +142,9 @@ function Board({ boardIndex, level }: BoardProps) {
           />
         );
       })}
-      {/* <span className="pointer-events-none left-1/2 top-1/2 absolute m-auto bg-red-200 z-10">
+      <span className="pointer-events-none left-1/2 top-1/2 absolute m-auto bg-red-200 z-10">
         {boardIndex}
-      </span> */}
+      </span>
     </div>
   );
 }
@@ -185,13 +180,7 @@ function Cell({ state, onMove, disabled }: CellProps) {
   );
 }
 
-export function getBoardIndexFromGrid(
-  columnIndex: number,
-  rowIndex: number,
-  gridSideSize: number,
-  offset: number
-) {
-  const gridIndex = rowIndex * gridSideSize + columnIndex;
-  const boardIdx = gridIndex * 9 + offset;
+export function getBoardIndexFromGridId(gridId: number, offset: number) {
+  const boardIdx = gridId * 9 + offset;
   return boardIdx;
 }

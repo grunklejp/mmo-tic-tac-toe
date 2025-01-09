@@ -1,14 +1,11 @@
 import { test, expect } from "vitest";
 import { isMoveValid } from "../memory";
 import type { Move } from "~/protocol";
-import { MAX_LEVEL } from "config";
+import { LEVELS, MAX_LEVEL } from "config";
+import { GameState } from "~/game-state";
 
 test("isMoveValid", () => {
-  const boards = 9;
-  const bytesInBoards = Math.ceil((boards * 9) / 8);
-
-  const xBitset = new Uint8Array(bytesInBoards);
-  const oBitset = new Uint8Array(bytesInBoards);
+  const state = new GameState(LEVELS);
 
   const move: Move = {
     board: 0,
@@ -17,14 +14,13 @@ test("isMoveValid", () => {
     level: MAX_LEVEL,
   };
 
-  const result = isMoveValid(move, xBitset, oBitset, "o");
+  const result = isMoveValid(move, state, "o");
 
   expect(result).toBe(true);
 });
 
 test("isMoveValid prevents users from manually submitting below the last level", () => {
-  const xBitset = new Uint8Array(2);
-  const oBitset = new Uint8Array(2);
+  const state = new GameState(LEVELS);
   const move: Move = {
     board: 0,
     cell: 0,
@@ -32,7 +28,7 @@ test("isMoveValid prevents users from manually submitting below the last level",
     level: MAX_LEVEL - 1,
   };
 
-  const result = isMoveValid(move, xBitset, oBitset, "o");
+  const result = isMoveValid(move, state, "o");
 
   expect(result).toBe(false);
 });
