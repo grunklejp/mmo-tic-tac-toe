@@ -25,4 +25,18 @@ export default defineConfig({
       },
     },
   },
+  preview: {
+    proxy: {
+      "/api": {
+        target: "http://localhost:3000",
+        changeOrigin: true,
+        secure: false,
+      },
+      "/ws": {
+        target: "ws://localhost:3000",
+        rewriteWsOrigin: true,
+        ws: true,
+      },
+    },
+  },
 });
