@@ -6,7 +6,7 @@
     "build": "cross-env NODE_ENV=production react-router build",
     "dev": "react-router dev",
     "preview": "vite preview",
-    "start": "cross-env NODE_ENV=production react-router-serve ./build/server/index.js",
+    "start": "bun run server/index.ts",
     "typecheck": "react-router typegen && tsc"
   },
   "dependencies": {
@@ -19,8 +19,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router": "^7.1.1",
-    "react-window": "^1.8.11",
-    "redis": "^4.7.0"
+    "react-window": "^1.8.11"
   },
   "devDependencies": {
     "@react-router/dev": "^7.1.1",

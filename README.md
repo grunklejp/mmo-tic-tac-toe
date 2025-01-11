@@ -36,11 +36,14 @@ Current goal:
 - [ ] cell tint color (i level < max_level) should be determined by number of number of wins in that section in higher levels
 - [ ] save current selected level in local state
 - [ ] save current scroll position in local state
-- [ ] rerender screen when a board resets above the below the 6th level
+- [ ] jump to correct board grid when clicking on higher level cell & highlight correct board
+- [ ] rerender screen when a board resets
 - [ ] team indicator
 - [ ] 🐞 clients aren't recieving messages that were sent just before connecting
 - [x] 🐞 higher level grids aren't aligned
   - need to assign boardIds based on the alignment
+- [x] 🐞 memory on client continues to grow...
+  - [ ] looks like it was cause by memory leak in react dev tools????
 
 POLISH 🇵🇱
 

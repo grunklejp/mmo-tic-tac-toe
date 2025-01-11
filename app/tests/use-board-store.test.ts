@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { buildBoard } from "~/hooks/use-board-store.js";
+import { buildBoard } from "~/hooks/use-board-store";
 
 test("builds board by combinding 2 bitset at byte offset 0", () => {
   const expectedBoard = ["x", "o", null, "o", "x", null, "o", "x", null];

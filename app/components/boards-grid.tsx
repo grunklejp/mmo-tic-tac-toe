@@ -1,12 +1,18 @@
-import { FixedSizeGrid as Grid } from "react-window";
-import { useState } from "react";
+import { FixedSizeGrid, FixedSizeGrid as Grid } from "react-window";
+import {
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+  type Ref,
+} from "react";
 import { useTeam } from "./team-provider";
 import { useProtocol } from "./sync-state-provider";
 import { useBoardStore } from "~/hooks/use-board-store";
 import { getNextTurn } from "~/utils";
 import { useLevels } from "./level-selector";
 import { MAX_LEVEL } from "config";
-import { calculateBoardId } from "~/grid-layout";
+import { calculateBoardId, getGridRowColFromBoardId } from "~/grid-layout";
 
 type Props = {
   key?: React.Key;
@@ -17,15 +23,33 @@ type Props = {
 };
 
 export function BoardsGrid({ ...props }: Props) {
+  const [updateScrollTo, setUpdateScrollTo] = useState<{
+    columnIndex: number;
+    rowIndex: number;
+  } | null>(null);
   const levelctx = useLevels();
+  const gridRef = useRef<FixedSizeGrid<any>>(null);
+  const [lastClicked, setLastClicked] = useState<number>();
+
   if (!levelctx) return null;
-  const { level, levels } = levelctx;
+  const { level, levels, setLevel } = levelctx;
 
   const boardGroupsThisLevel = Math.pow(9, level - 1);
   const sideCount = Math.sqrt(boardGroupsThisLevel);
 
+  useEffect(() => {
+    if (updateScrollTo !== null) {
+      gridRef.current?.scrollToItem({
+        align: "smart",
+        ...updateScrollTo,
+      });
+      setUpdateScrollTo(null);
+    }
+  }, [updateScrollTo]);
+
   return (
     <Grid
+      ref={gridRef}
       key={props.key}
       overscanColumnCount={3}
       overscanRowCount={3}
@@ -52,19 +76,47 @@ export function BoardsGrid({ ...props }: Props) {
             } border-gray-400 p-2`}
           >
             <span className="pointer-events-none top-0 font-medium text-gray-400 left-0.5 absolute m-auto z-10 text-xs">
-              {gridIndex}
+              {gridIndex} __
+              {props.rowIndex}, {props.columnIndex}
             </span>
             {level === 0 ? (
-              <Board level={level} key={`board-${0}`} boardIndex={0} />
+              <Board
+                level={level}
+                setLevel={setLevel}
+                key={`board-${0}`}
+                boardIndex={0}
+                shouldFlash={lastClicked === 0}
+                scrollAfterClick={(offset) => {
+                  setUpdateScrollTo({
+                    columnIndex: 0,
+                    rowIndex: 0,
+                  });
+                  setLastClicked(0 + offset);
+                }}
+              />
             ) : (
               new Array(level === 0 ? 1 : 9).fill(0).map((_, i) => {
-                const bIndex = gridIndex + i;
+                const boardIndex = getBoardIndexFromGridId(gridIndex, i);
 
                 return (
                   <Board
                     level={level}
-                    key={`board-${level}-${bIndex}`}
-                    boardIndex={getBoardIndexFromGridId(gridIndex, i)}
+                    key={`board-${level}-${boardIndex}`}
+                    boardIndex={boardIndex}
+                    setLevel={setLevel}
+                    shouldFlash={lastClicked === boardIndex}
+                    scrollAfterClick={(offset) => {
+                      const { row, col } = getGridRowColFromBoardId(
+                        level + 1,
+                        boardIndex
+                      );
+
+                      setUpdateScrollTo({
+                        rowIndex: row,
+                        columnIndex: col,
+                      });
+                      setLastClicked(boardIndex * 9 + offset);
+                    }}
                   />
                 );
               })
@@ -79,9 +131,18 @@ export function BoardsGrid({ ...props }: Props) {
 type BoardProps = {
   boardIndex: number;
   level: number;
+  setLevel: React.Dispatch<React.SetStateAction<number>>;
+  scrollAfterClick: (clickedOffset: number) => void;
+  shouldFlash?: boolean;
 };
-
-function Board({ boardIndex, level }: BoardProps) {
+function Board({
+  boardIndex,
+  level,
+  setLevel,
+  scrollAfterClick,
+  shouldFlash = false,
+}: BoardProps) {
+  const [isFlashing, setIsFlashing] = useState(false);
   const team = useTeam();
   const protocol = useProtocol();
   let { board, winner, hasAncestralWinner } = useBoardStore(boardIndex, level);
@@ -91,24 +152,35 @@ function Board({ boardIndex, level }: BoardProps) {
 
   let statefulClasses = "";
 
-  if (hasWinner) {
-    statefulClasses = "bg-white border border-gray-300";
-  } else if (hasAncestralWinner) {
+  if (hasAncestralWinner || hasWinner) {
     statefulClasses = "bg-gray-100";
+  } else if (level !== MAX_LEVEL) {
+    statefulClasses = "bg-white border border-gray-300";
   } else if (turn === "x") {
     statefulClasses = "bg-red-100";
-  } else {
+  } else if (turn) {
     statefulClasses = "bg-blue-100";
   }
+
+  useEffect(() => {
+    if (shouldFlash) {
+      setIsFlashing(true);
+      const timeout = setTimeout(() => {
+        setIsFlashing(false);
+      }, 1000);
+
+      return () => clearTimeout(timeout);
+    }
+  }, [shouldFlash]);
 
   return (
     <div
       className={"grid grid-cols-3 grid-rows-3 m-2 relative " + statefulClasses}
     >
       {hasWinner && (
-        <div className="flex w-full h-full absolute inset-0 bg-gray-100/50 items-center justify-center">
+        <div className="flex w-full h-full absolute inset-0 bg-gray-300/50 items-center justify-center">
           <span
-            className={`uppercase font-semibold drop-shadow-lg text-7xl ${
+            className={`uppercase font-semibold text-7xl ${
               winner === "x" ? "text-red-500" : "text-blue-500"
             }`}
           >
@@ -116,14 +188,20 @@ function Board({ boardIndex, level }: BoardProps) {
           </span>
         </div>
       )}
+
+      {isFlashing && (
+        <div className="w-3/4 h-3/4 absolute inset-0 m-auto bg-yellow-300/50 animate-ping"></div>
+      )}
+
       {board.map((piece, i) => {
         return (
+          // todo fix hot spot
           <Cell
             disabled={hasAncestralWinner}
             key={`cell-${boardIndex}-${i}`}
             state={piece}
             index={i}
-            onMove={(cb) => {
+            onMove={(onAfterMove) => {
               console.log(boardIndex, i, turn);
               if (level === MAX_LEVEL) {
                 if (piece === null && isPlayerTurn && protocol?.move) {
@@ -133,18 +211,21 @@ function Board({ boardIndex, level }: BoardProps) {
                     cell: i,
                     value: turn,
                   });
-                  cb(turn);
+                  onAfterMove(turn);
                 }
               } else {
-                console.log("TODO: go to next one");
+                //TODO: setPreviousClickedCell
+                setLevel((l) => l + 1);
+                scrollAfterClick(i);
+                // setPrevClicked({ level: level, board: boardIndex, cell: i });
               }
             }}
           />
         );
       })}
-      <span className="pointer-events-none left-1/2 top-1/2 absolute m-auto bg-red-200 z-10">
+      {/* <span className="pointer-events-none left-1/2 top-1/2 absolute m-auto bg-red-200 z-10">
         {boardIndex}
-      </span>
+      </span> */}
     </div>
   );
 }
@@ -173,7 +254,7 @@ function Cell({ state, onMove, disabled }: CellProps) {
           setTimeout(() => setMemodValue(null), 2000);
         });
       }}
-      className={`w-full h-full border border-gray-500 uppercase font-semibold ${colorClass} ${bgColor}`}
+      className={`w-full h-full border border-gray-500 uppercase text-xl font-normal ${colorClass} ${bgColor}`}
     >
       {state ?? memodValue}
     </button>

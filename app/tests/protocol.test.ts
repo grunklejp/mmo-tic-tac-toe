@@ -11,8 +11,8 @@ import {
   serializeMove,
   SERVER_MSG,
   type Move,
-} from "~/protocol";
-import { asBitString } from "~/utils";
+} from "app/protocol";
+import { asBitString } from "app/utils";
 
 test("serializeMove to work", () => {
   const empty = serializeMove({ board: 0, cell: 0, sequence: 0, level: 1 });
