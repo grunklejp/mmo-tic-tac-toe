@@ -43,7 +43,7 @@ Current goal:
 - [x] 🐞 higher level grids aren't aligned
   - need to assign boardIds based on the alignment
 - [x] 🐞 memory on client continues to grow...
-  - [ ] looks like it was cause by memory leak in react dev tools????
+  - looks like it was cause by memory leak in react dev tools????
 
 POLISH 🇵🇱
 

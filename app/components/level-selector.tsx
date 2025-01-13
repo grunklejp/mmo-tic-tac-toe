@@ -1,9 +1,22 @@
-import { createContext, useContext, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
+
+type Position = {
+  top: number;
+  left: number;
+};
 
 const levelContext = createContext<{
   levels: number;
   level: number;
   setLevel: React.Dispatch<React.SetStateAction<number>>;
+  setLevelAndKeepScroll: (level: number) => void;
+  scrollRef: React.RefObject<Position>;
 } | null>(null);
 
 export function LevelProvider({
@@ -14,6 +27,18 @@ export function LevelProvider({
   children: ReactNode;
 }) {
   const [level, setLevel] = useState(0);
+  const scrollRef = useRef<Position>({
+    top: 0,
+    left: 0,
+  });
+
+  const setLevelAndKeepScroll = (newLevel: number) => {
+    const scaleFactor = Math.pow(3, newLevel - level);
+    scrollRef.current.top *= scaleFactor;
+    scrollRef.current.left *= scaleFactor;
+
+    setLevel(newLevel);
+  };
 
   return (
     <levelContext.Provider
@@ -21,6 +46,8 @@ export function LevelProvider({
         levels,
         level,
         setLevel,
+        setLevelAndKeepScroll,
+        scrollRef,
       }}
     >
       {children}
@@ -35,7 +62,7 @@ export function LevelSelector() {
     return null;
   }
 
-  const { level, levels, setLevel } = context;
+  const { level, levels, setLevelAndKeepScroll } = context;
 
   const renderLevels = new Array(levels).fill(0).map((_, thisLevel) => {
     const statefulClasses =
@@ -46,7 +73,7 @@ export function LevelSelector() {
     return (
       <button
         onClick={() => {
-          setLevel(thisLevel);
+          setLevelAndKeepScroll(thisLevel);
         }}
         className={`rounded px-2 p-1 font-medium text-sm md:text-lg shrink-0 ${statefulClasses}`}
         key={`level-${thisLevel}`}

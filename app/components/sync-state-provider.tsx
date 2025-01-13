@@ -110,6 +110,7 @@ export function SyncStateProvider({ children }: Props) {
         }
         case SERVER_MSG.CLEAR_BOARD: {
           clearBoardPayload(msg.payload);
+          //idea: can potentially trigger entire rerender here? what is downside?
           break;
         }
         case SERVER_MSG.BATCH_UPDATE: {

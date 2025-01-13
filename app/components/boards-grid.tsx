@@ -1,17 +1,11 @@
 import { FixedSizeGrid, FixedSizeGrid as Grid } from "react-window";
-import {
-  useEffect,
-  useImperativeHandle,
-  useRef,
-  useState,
-  type Ref,
-} from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTeam } from "./team-provider";
 import { useProtocol } from "./sync-state-provider";
 import { useBoardStore } from "~/hooks/use-board-store";
 import { getNextTurn } from "~/utils";
 import { useLevels } from "./level-selector";
-import { MAX_LEVEL } from "config";
+import { COLUMN_WIDTH, MAX_LEVEL, ROW_HEIGHT } from "config";
 import { calculateBoardId, getGridRowColFromBoardId } from "~/grid-layout";
 
 type Props = {
@@ -22,6 +16,12 @@ type Props = {
   };
 };
 
+type Position = {
+  level: number;
+  board: number;
+  cell: number;
+};
+
 export function BoardsGrid({ ...props }: Props) {
   const [updateScrollTo, setUpdateScrollTo] = useState<{
     columnIndex: number;
@@ -29,36 +29,46 @@ export function BoardsGrid({ ...props }: Props) {
   } | null>(null);
   const levelctx = useLevels();
   const gridRef = useRef<FixedSizeGrid<any>>(null);
-  const [lastClicked, setLastClicked] = useState<number>();
+  const [lastClickedPos, setLastClickedPos] = useState<Position>();
 
   if (!levelctx) return null;
-  const { level, levels, setLevel } = levelctx;
-
+  const { level, levels, setLevel, scrollRef } = levelctx;
   const boardGroupsThisLevel = Math.pow(9, level - 1);
   const sideCount = Math.sqrt(boardGroupsThisLevel);
 
   useEffect(() => {
-    if (updateScrollTo !== null) {
-      gridRef.current?.scrollToItem({
-        align: "smart",
-        ...updateScrollTo,
-      });
-      setUpdateScrollTo(null);
+    if (gridRef.current) {
+      if (updateScrollTo !== null) {
+        gridRef.current.scrollToItem({
+          align: "smart",
+          ...updateScrollTo,
+        });
+        setUpdateScrollTo(null);
+      } else {
+        gridRef.current.scrollTo({
+          scrollLeft: scrollRef.current.left,
+          scrollTop: scrollRef.current.top,
+        });
+      }
     }
-  }, [updateScrollTo]);
+  }, [updateScrollTo, level]);
 
   return (
     <Grid
       ref={gridRef}
-      key={props.key}
+      key={`${props.key}`}
       overscanColumnCount={3}
       overscanRowCount={3}
       columnCount={sideCount}
       rowCount={sideCount}
-      columnWidth={350}
-      rowHeight={350}
+      columnWidth={COLUMN_WIDTH}
+      rowHeight={ROW_HEIGHT}
       height={props.dims.h}
       width={props.dims.w}
+      onScroll={({ scrollLeft, scrollTop }) => {
+        scrollRef.current.left = scrollLeft;
+        scrollRef.current.top = scrollTop;
+      }}
     >
       {(props) => {
         // although this is for calculating the boardID it works fine to calculate the grid ID
@@ -76,8 +86,7 @@ export function BoardsGrid({ ...props }: Props) {
             } border-gray-400 p-2`}
           >
             <span className="pointer-events-none top-0 font-medium text-gray-400 left-0.5 absolute m-auto z-10 text-xs">
-              {gridIndex} __
-              {props.rowIndex}, {props.columnIndex}
+              {(gridIndex * Math.pow(9, levels - level)).toLocaleString()}
             </span>
             {level === 0 ? (
               <Board
@@ -85,13 +94,20 @@ export function BoardsGrid({ ...props }: Props) {
                 setLevel={setLevel}
                 key={`board-${0}`}
                 boardIndex={0}
-                shouldFlash={lastClicked === 0}
+                shouldFlash={getShouldFlash(0, 0, lastClickedPos)}
                 scrollAfterClick={(offset) => {
                   setUpdateScrollTo({
                     columnIndex: 0,
                     rowIndex: 0,
                   });
-                  setLastClicked(0 + offset);
+
+                  const position = {
+                    level: level,
+                    board: 0,
+                    cell: 0 + offset,
+                  };
+
+                  setLastClickedPos(position);
                 }}
               />
             ) : (
@@ -104,7 +120,11 @@ export function BoardsGrid({ ...props }: Props) {
                     key={`board-${level}-${boardIndex}`}
                     boardIndex={boardIndex}
                     setLevel={setLevel}
-                    shouldFlash={lastClicked === boardIndex}
+                    shouldFlash={getShouldFlash(
+                      boardIndex,
+                      level,
+                      lastClickedPos
+                    )}
                     scrollAfterClick={(offset) => {
                       const { row, col } = getGridRowColFromBoardId(
                         level + 1,
@@ -115,7 +135,11 @@ export function BoardsGrid({ ...props }: Props) {
                         rowIndex: row,
                         columnIndex: col,
                       });
-                      setLastClicked(boardIndex * 9 + offset);
+                      setLastClickedPos({
+                        board: boardIndex,
+                        cell: offset,
+                        level: level,
+                      });
                     }}
                   />
                 );
@@ -190,7 +214,7 @@ function Board({
       )}
 
       {isFlashing && (
-        <div className="w-3/4 h-3/4 absolute inset-0 m-auto bg-yellow-300/50 animate-ping"></div>
+        <div className="w-3/4 h-3/4 pointer-events-none absolute inset-0 m-auto bg-yellow-300/50 animate-ping"></div>
       )}
 
       {board.map((piece, i) => {
@@ -214,10 +238,8 @@ function Board({
                   onAfterMove(turn);
                 }
               } else {
-                //TODO: setPreviousClickedCell
                 setLevel((l) => l + 1);
                 scrollAfterClick(i);
-                // setPrevClicked({ level: level, board: boardIndex, cell: i });
               }
             }}
           />
@@ -264,4 +286,18 @@ function Cell({ state, onMove, disabled }: CellProps) {
 export function getBoardIndexFromGridId(gridId: number, offset: number) {
   const boardIdx = gridId * 9 + offset;
   return boardIdx;
+}
+
+function getShouldFlash(
+  currentBoard: number,
+  currentLevel: number,
+  clickedPosition?: Position
+) {
+  if (!clickedPosition) return false;
+
+  const targetBoard = clickedPosition.board * 9 + clickedPosition.cell;
+
+  return (
+    targetBoard === currentBoard && clickedPosition.level === currentLevel - 1
+  );
 }
