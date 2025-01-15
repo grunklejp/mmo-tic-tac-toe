@@ -81,7 +81,7 @@ test("clears boards from offset", () => {
 
 test("clears board from GameState", () => {
   const state = new GameState(1);
-  const bitset = state.bitset(1, "o");
+  const bitset = state.bitset(0, "o");
   bitset[0] = 0b1110_0111;
   clearBoardsFromBuffer(0, 1, bitset);
 

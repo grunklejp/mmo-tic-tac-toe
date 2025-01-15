@@ -19,6 +19,10 @@ export class GameState {
   bitset(level: number, side: "x" | "o"): Uint8Array {
     const bytesInLevelBitset = this.calcSizeByLevel(level) / 2;
 
+    if (level >= this.levels) {
+      throw new Error("No such level, remeber levels are 0 indexed");
+    }
+
     if (side === "x") {
       return new Uint8Array(
         this.buffer,
@@ -59,8 +63,8 @@ export class GameState {
 
   private calcBufferSize(levels: number): number {
     let result = BYTES_FOR_SEQ_NUM;
-    this.levelByteOffsets = [BYTES_FOR_SEQ_NUM]; // first level starts after sequence num
-    for (let i = 0; i < levels + 1; i++) {
+    this.levelByteOffsets = [BYTES_FOR_SEQ_NUM]; // 0th level starts after sequence num
+    for (let i = 0; i < levels; i++) {
       const bytesPerLevel = this.calcSizeByLevel(i);
       result += bytesPerLevel;
       if (i !== levels) {

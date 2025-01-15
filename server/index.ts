@@ -90,6 +90,9 @@ app.get(
       onOpen: (event, ws) => {
         const socket = ws.raw as ServerWebSocket;
 
+        // set up client subscriber;
+        socket.subscribe("patch-updates");
+
         // Send the most recent messages since the latest snapshot
         const movesSinceLastSnapshot = sequences.flatten();
         const catchUpMSG = buildBatchUpdatesMessage(
@@ -97,9 +100,6 @@ app.get(
           sequences.earliest
         );
         socket.sendBinary(catchUpMSG, true);
-
-        // set up client subscriber;
-        socket.subscribe("patch-updates");
       },
       onClose: (_, ws) => {
         const socket = ws.raw as ServerWebSocket;
