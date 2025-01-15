@@ -1,3 +1,4 @@
+import { LEVELS, MAX_LEVEL } from "config";
 import {
   createContext,
   useContext,
@@ -26,7 +27,7 @@ export function LevelProvider({
   levels: number;
   children: ReactNode;
 }) {
-  const [level, setLevel] = useState(0);
+  const [level, setLevel] = useState(MAX_LEVEL);
   const scrollRef = useRef<Position>({
     top: 0,
     left: 0,
@@ -55,6 +56,9 @@ export function LevelProvider({
   );
 }
 
+/**
+ * level selector shows user friendly levels, starts at 1, goes to 7. (level 1 === system level 6)
+ */
 export function LevelSelector() {
   const context = useLevels();
 
@@ -78,13 +82,13 @@ export function LevelSelector() {
         className={`rounded px-2 p-1 font-medium text-sm md:text-lg shrink-0 ${statefulClasses}`}
         key={`level-${thisLevel}`}
       >
-        Level {thisLevel}
+        Level {convertToUserLevel(thisLevel, LEVELS)}
       </button>
     );
   });
 
   return (
-    <div className="flex items-center gap-2 md:gap-4 overflow-x-scroll self-center">
+    <div className="flex flex-row-reverse items-center gap-2 md:gap-4 overflow-x-scroll self-center">
       {renderLevels}
     </div>
   );
@@ -92,4 +96,8 @@ export function LevelSelector() {
 
 export function useLevels() {
   return useContext(levelContext);
+}
+
+function convertToUserLevel(systemLevel: number, levelCount: number) {
+  return levelCount - systemLevel;
 }

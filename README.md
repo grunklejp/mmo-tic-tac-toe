@@ -44,6 +44,7 @@ Current goal:
 - [x] 🐞 memory on client continues to grow...
   - looks like it was cause by memory leak in react dev tools????
 - [ ] stalemates cause scroll to update
+- [x] reverse levels & make playable level the default
 
 POLISH 🇵🇱
 
