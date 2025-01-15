@@ -34,16 +34,16 @@ Current goal:
 - [x] validate on server that users can only make moves on the highest level (6)
 - [x] empty cells in won boards should be greyed out
 - [ ] cell tint color (i level < max_level) should be determined by number of number of wins in that section in higher levels
-- [ ] save current selected level in local state
-- [ ] save current scroll position in local state
-- [ ] jump to correct board grid when clicking on higher level cell & highlight correct board
+- [x] jump to correct board grid when clicking on higher level cell & highlight correct board
 - [ ] rerender screen when a board resets
-- [ ] team indicator
+- [ ] a board needs to subscribe to not only their actual board but the parents as well.
+- [x] team indicator
 - [ ] 🐞 clients aren't recieving messages that were sent just before connecting
 - [x] 🐞 higher level grids aren't aligned
   - need to assign boardIds based on the alignment
 - [x] 🐞 memory on client continues to grow...
   - looks like it was cause by memory leak in react dev tools????
+- [ ] stalemates cause scroll to update
 
 POLISH 🇵🇱
 

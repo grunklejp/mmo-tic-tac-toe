@@ -5,6 +5,7 @@ import { SyncStateProvider } from "~/components/sync-state-provider";
 import { BoardsGrid } from "~/components/boards-grid";
 import { LevelProvider, LevelSelector } from "~/components/level-selector";
 import { LEVELS } from "config";
+import { TeamIndicator } from "~/components/team-indicator";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -19,12 +20,18 @@ export default function Home() {
       <SyncStateProvider>
         {(renderKey) => (
           <LevelProvider levels={LEVELS}>
-            <div className="flex flex-col h-screen">
-              <header className="flex flex-col align-center items-center m-4 gap-3">
-                <h1 className="text-4xl font-bold">MMO Tic-Tac-Toe</h1>
-                <LevelSelector />
+            <div className="flex flex-col h-screen bg-gray-100">
+              <header className="flex mx-4 flex-col md:flex-row justify-between items-center">
+                <div></div>
+                <div className="flex flex-col align-center items-center m-4 gap-3">
+                  <h1 className="text-4xl font-bold">MMO Tic-Tac-Toe</h1>
+                  <LevelSelector />
+                </div>
+                <div className="self-end">
+                  <TeamIndicator />
+                </div>
               </header>
-              <DynamicContainer className="m-4 relative bg-white border border-gray-400 rounded-sm shadow-inner overflow-hidden">
+              <DynamicContainer className="relative sm:mx-4 bg-white border border-gray-400 rounded-sm shadow-inner overflow-hidden">
                 {(dims) => <BoardsGrid dims={dims} key={renderKey} />}
               </DynamicContainer>
             </div>
