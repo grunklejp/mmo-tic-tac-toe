@@ -201,15 +201,17 @@ function Board({
     <div
       className={"grid grid-cols-3 grid-rows-3 m-2 relative " + statefulClasses}
     >
-      {hasWinner && (
+      {(hasWinner || hasAncestralWinner) && (
         <div className="flex w-full h-full absolute inset-0 bg-gray-300/50 items-center justify-center">
-          <span
-            className={`uppercase font-semibold text-7xl ${
-              winner === "x" ? "text-red-500" : "text-blue-500"
-            }`}
-          >
-            {winner}
-          </span>
+          {hasWinner && (
+            <span
+              className={`uppercase font-semibold text-7xl ${
+                winner === "x" ? "text-red-500" : "text-blue-500"
+              }`}
+            >
+              {winner}
+            </span>
+          )}
         </div>
       )}
 
