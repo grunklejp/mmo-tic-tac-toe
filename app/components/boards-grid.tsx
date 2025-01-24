@@ -197,7 +197,10 @@ function Board({
 
   return (
     <div
-      className={"grid grid-cols-3 grid-rows-3 m-2 relative " + statefulClasses}
+      className={
+        "grid grid-cols-3 grid-rows-3 m-2 relative overflow-auto " +
+        statefulClasses
+      }
     >
       {(hasWinner || hasAncestralWinner) && (
         <div className="flex w-full h-full absolute inset-0 bg-gray-300/50 items-center justify-center">
