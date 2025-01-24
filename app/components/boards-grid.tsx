@@ -9,7 +9,6 @@ import { COLUMN_WIDTH, MAX_LEVEL, ROW_HEIGHT } from "config";
 import { calculateBoardId, getGridRowColFromBoardId } from "~/grid-layout";
 
 type Props = {
-  key?: React.Key;
   dims: {
     h: number;
     w: number;
@@ -56,7 +55,6 @@ export function BoardsGrid({ ...props }: Props) {
   return (
     <Grid
       ref={gridRef}
-      key={`${props.key}`}
       overscanColumnCount={3}
       overscanRowCount={3}
       columnCount={sideCount}
@@ -180,10 +178,10 @@ function Board({
     statefulClasses = "bg-gray-100";
   } else if (level !== MAX_LEVEL) {
     statefulClasses = "bg-white border border-gray-300";
-  } else if (turn === "x") {
-    statefulClasses = "bg-red-100";
-  } else if (turn) {
-    statefulClasses = "bg-blue-100";
+  } else if (isPlayerTurn && turn === "x") {
+    statefulClasses = "bg-red-100 hover:ring ring-red-500";
+  } else if (isPlayerTurn) {
+    statefulClasses = "bg-blue-100 hover:ring ring-blue-500";
   }
 
   useEffect(() => {
