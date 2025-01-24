@@ -44,7 +44,7 @@ Current goal:
   - looks like it was cause by memory leak in react dev tools????
 - [x] reverse levels & make playable level the default
 - [x] only show tint on level 1 for users own team
-- [ ] make level picker mobile friendly
+- [x] make level picker mobile friendly
 - [ ] board search
 
 POLISH 🇵🇱
@@ -56,7 +56,7 @@ POLISH 🇵🇱
 For launch
 
 - [ ] write a "how to play" info icon
-- [ ] make live canvas of game state
 - [ ] track player stats (cells played, wins triggered)
 - [ ] snapshot + syncing loading state
 - [ ] rate limitter
+- [ ] make live canvas of game state

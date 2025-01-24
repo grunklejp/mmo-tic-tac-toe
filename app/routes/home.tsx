@@ -23,7 +23,7 @@ export default function Home() {
             <header className="flex mx-4 flex-col md:flex-row justify-between items-center">
               <div className="self-end p-2">{/* <ProgressDialog /> */}</div>
               <div className="flex flex-col align-center items-center m-4 gap-3">
-                <h1 className="md:text-5xl text-3xl font-extrabold acme-regular">
+                <h1 className="text-5xl font-extrabold acme-regular">
                   MMO Tic-Tac-Toe
                 </h1>
                 <div className="flex gap-2">
