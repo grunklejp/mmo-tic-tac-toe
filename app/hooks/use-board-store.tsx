@@ -55,6 +55,13 @@ export function makeTurnAndRender(move: ClientMove) {
   }
 }
 
+//** will rerender all boards on the current screen */
+export function forceRerender() {
+  for (const [id, cb] of listeners) {
+    cb();
+  }
+}
+
 export function makeTurn(move: ClientMove) {
   const { board, cell, value, level } = move;
   const bitIndex = board * 9 + cell;

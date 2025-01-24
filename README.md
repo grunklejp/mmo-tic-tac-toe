@@ -15,16 +15,14 @@ Current goal:
 - [x] fetch delta
 - [x] 🐞 fetching delta not working fast enough on page refresh
   - SOLVED: just needed to trigger a rerender
-- [ ] snapshot + syncing loading state
-- [ ] snapshot fetching error message
 - [x] show "disconnected" message and button to reconnect (refetch latest snapshot and resync)
 - [x] set team cookie
 - [x] make move from the client
-- [ ] check win
+- [x] check win
   - [x] don't let user click on boards that are won
   - [x] don't let user click or submit for entire sections that are won
 - [x] recursively check win & update state on the server
-  - [ ] test this
+  - [x] test this
 - [x] define level specific updates for protocol
 - [x] level selector
 - [x] make levels show proper state
@@ -35,19 +33,30 @@ Current goal:
 - [x] empty cells in won boards should be greyed out
 - [ ] cell tint color (i level < max_level) should be determined by number of number of wins in that section in higher levels
 - [x] jump to correct board grid when clicking on higher level cell & highlight correct board
-- [ ] rerender screen when a board resets
-- [ ] a board needs to subscribe to not only their actual board but the parents as well.
+- [x] rerender screen when a board resets
+- [x] stalemates cause scroll to update
 - [x] team indicator
 - [ ] 🐞 clients aren't recieving messages that were sent just before connecting
+  - [ ] test if this has been fixed
 - [x] 🐞 higher level grids aren't aligned
   - need to assign boardIds based on the alignment
 - [x] 🐞 memory on client continues to grow...
   - looks like it was cause by memory leak in react dev tools????
-- [ ] stalemates cause scroll to update
 - [x] reverse levels & make playable level the default
+- [x] only show tint on level 1 for users own team
+- [ ] make level picker mobile friendly
+- [ ] board search
 
 POLISH 🇵🇱
 
 - [ ] pick more playful font
 - [ ] resize & center level 0 & 1 boards
-- [x] dim all unplayable boards 
+- [x] dim all unplayable boards
+
+For launch
+
+- [ ] write a "how to play" info icon
+- [ ] make live canvas of game state
+- [ ] track player stats (cells played, wins triggered)
+- [ ] snapshot + syncing loading state
+- [ ] rate limitter

@@ -19,6 +19,7 @@ import {
   type Message,
 } from "~/protocol";
 import {
+  forceRerender,
   fromClientMove,
   makeTurnAndRender,
   toClientMove,
@@ -29,7 +30,7 @@ import { MAX_LEVEL } from "config";
 import { clearBoard } from "~/game";
 
 type Props = {
-  children: (renderKey: React.Key) => ReactNode;
+  children: ReactNode;
 };
 
 type Context = {
@@ -39,8 +40,6 @@ type Context = {
 const protocolContext = createContext<Context>(null);
 
 export function SyncStateProvider({ children }: Props) {
-  const [key, setKey] = useState(Math.random());
-  const rerender = () => setKey(Math.random());
   const [fetchedSnapshot, setFetchedSnapshot] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [needRefresh, setNeedRefresh] = useState(false);
@@ -70,7 +69,7 @@ export function SyncStateProvider({ children }: Props) {
 
         const data = await response.arrayBuffer();
         parseSnapshot(data);
-        rerender();
+        forceRerender();
         setFetchedSnapshot(true);
       } catch (e) {
         console.error(e);
@@ -110,7 +109,8 @@ export function SyncStateProvider({ children }: Props) {
         }
         case SERVER_MSG.CLEAR_BOARD: {
           clearBoardPayload(msg.payload);
-          //idea: can potentially trigger entire rerender here? what is downside?
+          // we simply rerender everyones screen
+          forceRerender();
           break;
         }
         case SERVER_MSG.BATCH_UPDATE: {
@@ -143,7 +143,7 @@ export function SyncStateProvider({ children }: Props) {
     <protocolContext.Provider value={{ move }}>
       <div className="relative">
         {needRefresh && <ReconnectWidget />}
-        {children(key)}
+        {children}
       </div>
     </protocolContext.Provider>
   );
