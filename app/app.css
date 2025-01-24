@@ -1,3 +1,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.acme-regular {
+  font-family: "Acme", serif;
+  font-weight: 400;
+  font-style: normal;
+}

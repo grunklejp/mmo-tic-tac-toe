@@ -49,7 +49,7 @@ Current goal:
 
 POLISH 🇵🇱
 
-- [ ] pick more playful font
+- [x] pick more playful font
 - [ ] resize & center level 0 & 1 boards
 - [x] dim all unplayable boards
 
