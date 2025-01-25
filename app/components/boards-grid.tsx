@@ -7,6 +7,8 @@ import { getNextTurn } from "~/utils";
 import { useLevels } from "./level-selector";
 import { COLUMN_WIDTH, MAX_LEVEL, ROW_HEIGHT } from "config";
 import { calculateBoardId, getGridRowColFromBoardId } from "~/grid-layout";
+import { useGridCoordinateSelection } from "./grid-coordinate-selection-manager";
+import type { Position } from "~/utils";
 
 type Props = {
   dims: {
@@ -15,23 +17,19 @@ type Props = {
   };
 };
 
-type Position = {
-  level: number;
-  board: number;
-  cell: number;
-};
-
 export function BoardsGrid({ ...props }: Props) {
-  const [updateScrollTo, setUpdateScrollTo] = useState<{
-    columnIndex: number;
-    rowIndex: number;
-  } | null>(null);
   const levelctx = useLevels();
+  const autoScrollCtx = useGridCoordinateSelection();
   const gridRef = useRef<FixedSizeGrid<any>>(null);
-  const [lastClickedPos, setLastClickedPos] = useState<Position>();
 
-  if (!levelctx) return null;
+  if (!levelctx || !autoScrollCtx) return null;
   const { level, levels, setLevel, scrollRef } = levelctx;
+  const {
+    lastClickedPos,
+    setLastClickedPos,
+    setUpdateScrollTo,
+    updateScrollTo,
+  } = autoScrollCtx;
   const boardGroupsThisLevel = Math.pow(9, level - 1);
   const sideCount = Math.sqrt(boardGroupsThisLevel);
 
@@ -84,7 +82,11 @@ export function BoardsGrid({ ...props }: Props) {
             } border-gray-400 p-2`}
           >
             <span className="pointer-events-none top-0 font-medium text-gray-400 left-0.5 absolute m-auto z-10 text-xs">
-              {(gridIndex * Math.pow(9, levels - level)).toLocaleString()}
+              {gridIndex * 9}
+              {/* {level < MAX_LEVEL &&
+                ` (${(
+                  gridIndex * Math.pow(9, levels - level)
+                ).toLocaleString()})`} */}
             </span>
             {level === 0 ? (
               <Board

@@ -151,3 +151,9 @@ export function asBitString(val: number | Uint8Array) {
 
   return Array.from(val).map((v) => v.toString(2).padStart(8, "0"));
 }
+
+export type Position = {
+  level: number;
+  board: number;
+  cell: number;
+};

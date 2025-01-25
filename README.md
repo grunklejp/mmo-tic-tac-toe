@@ -45,7 +45,7 @@ Current goal:
 - [x] reverse levels & make playable level the default
 - [x] only show tint on level 1 for users own team
 - [x] make level picker mobile friendly
-- [ ] board search
+- [x] board search
 
 POLISH 🇵🇱
 
